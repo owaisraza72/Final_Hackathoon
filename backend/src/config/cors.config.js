@@ -2,7 +2,7 @@ const env = require("./env.config");
 
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = [env.CLIENT_URL];
+    const allowedOrigins = env.ALLOWED_ORIGINS || [];
 
     // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin || allowedOrigins.includes(origin)) {
