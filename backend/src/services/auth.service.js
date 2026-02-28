@@ -3,6 +3,8 @@ const User = require("../models/user.model");
 const ApiError = require("../utils/ApiError");
 const { HTTP_STATUS } = require("../constants");
 const env = require("../config/env.config");
+const Clinic = require("../models/clinic.model");
+const { ROLES } = require("../constants");
 
 class AuthService {
   /**
@@ -22,18 +24,32 @@ class AuthService {
   }
 
   /**
-   * Register new user
+   * Register new user (SaaS Onboarding)
    */
-  async register({ name, email, password }) {
+  async register({ name, email, password, clinicName }) {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new ApiError(
         HTTP_STATUS.CONFLICT,
-        "User with this email already exists"
+        "User with this email already exists",
       );
     }
 
-    const user = await User.create({ name, email, password });
+    // 1. Create the Clinic first
+    const clinic = await Clinic.create({
+      name: clinicName || `${name}'s Clinic`,
+    });
+
+    // 2. Create the User and link to Clinic
+    // First user is always ADMIN of their own clinic
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: ROLES.ADMIN,
+      clinicId: clinic._id,
+    });
+
     const { accessToken, refreshToken } = await this.generateTokens(user._id);
     const userData = user.toJSON();
 
@@ -46,7 +62,7 @@ class AuthService {
   async login({ email, password }) {
     // Always use generic message to prevent user enumeration
     const user = await User.findOne({ email, isActive: true }).select(
-      "+password"
+      "+password",
     );
     if (!user) {
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid email or password");
@@ -86,7 +102,7 @@ class AuthService {
     } catch {
       throw new ApiError(
         HTTP_STATUS.UNAUTHORIZED,
-        "Invalid or expired refresh token"
+        "Invalid or expired refresh token",
       );
     }
 

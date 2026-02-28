@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, UserPlus, ArrowRight, AlertCircle, Check, X } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  UserPlus,
+  ArrowRight,
+  AlertCircle,
+  Check,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,7 +61,8 @@ const RegisterPage = () => {
   };
 
   const isPasswordValid = Object.values(passwordChecks).every((check) => check);
-  const passwordsMatch = formData.password && formData.password === formData.confirmPassword;
+  const passwordsMatch =
+    formData.password && formData.password === formData.confirmPassword;
 
   const validateForm = () => {
     const newErrors = {};
@@ -81,7 +90,11 @@ const RegisterPage = () => {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    if (!isValid) {
+      toast.error("Please fix the validation errors before submitting.");
+    }
+    return isValid;
   };
 
   const handleChange = (e) => {
@@ -98,12 +111,23 @@ const RegisterPage = () => {
 
     try {
       const { confirmPassword, ...registerData } = formData;
-      await register(registerData).unwrap();
+      const res = await register(registerData).unwrap();
+
+      const userRole = res.data?.user?.role;
+      let targetPath = ROUTES.HOME;
+      if (userRole === "ADMIN") targetPath = ROUTES.ADMIN_DASHBOARD;
+      else if (userRole === "DOCTOR") targetPath = ROUTES.DOCTOR_DASHBOARD;
+      else if (userRole === "RECEPTIONIST")
+        targetPath = ROUTES.RECEPTIONIST_DASHBOARD;
+      else if (userRole === "PATIENT") targetPath = ROUTES.PATIENT_DASHBOARD;
+
       toast.success("Account created successfully!");
-      navigate(ROUTES.HOME, { replace: true });
+      navigate(targetPath, { replace: true });
     } catch (err) {
       const message =
-        err?.data?.message || "Registration failed. Please try again.";
+        err?.data?.message ||
+        err?.error ||
+        "Registration failed. Please try again.";
       toast.error(message);
 
       if (err?.data?.errors?.length) {
@@ -226,11 +250,13 @@ const RegisterPage = () => {
                   )}
                 </button>
               </div>
-              
+
               {/* Password Requirements */}
               {formData.password && (
                 <div className="rounded-lg bg-muted/50 p-4 space-y-2">
-                  <p className="text-xs font-medium text-foreground">Password requirements:</p>
+                  <p className="text-xs font-medium text-foreground">
+                    Password requirements:
+                  </p>
                   <PasswordRequirement
                     met={passwordChecks.minLength}
                     text="At least 8 characters"
@@ -273,16 +299,14 @@ const RegisterPage = () => {
                     errors.confirmPassword
                       ? "border-destructive focus-visible:ring-destructive"
                       : passwordsMatch && formData.confirmPassword
-                      ? "border-green-500"
-                      : ""
+                        ? "border-green-500"
+                        : ""
                   }`}
                 />
                 <button
                   type="button"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   aria-label="Toggle password visibility"
                 >
                   {showConfirmPassword ? (

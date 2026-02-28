@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       select: false,
     },
+    clinicId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Clinic",
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -67,7 +71,7 @@ const userSchema = new mongoose.Schema(
         return ret;
       },
     },
-  }
+  },
 );
 
 // ── Hash password before save (Mongoose 8+ style — no next()) ──
@@ -86,16 +90,14 @@ userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     { _id: this._id, email: this.email, role: this.role },
     env.JWT_ACCESS_SECRET,
-    { expiresIn: env.JWT_ACCESS_EXPIRY }
+    { expiresIn: env.JWT_ACCESS_EXPIRY },
   );
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(
-    { _id: this._id },
-    env.JWT_REFRESH_SECRET,
-    { expiresIn: env.JWT_REFRESH_EXPIRY }
-  );
+  return jwt.sign({ _id: this._id }, env.JWT_REFRESH_SECRET, {
+    expiresIn: env.JWT_REFRESH_EXPIRY,
+  });
 };
 
 module.exports = mongoose.model("User", userSchema);

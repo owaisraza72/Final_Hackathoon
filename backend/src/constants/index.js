@@ -1,6 +1,13 @@
 const ROLES = Object.freeze({
-  USER: "user",
-  ADMIN: "admin",
+  ADMIN: "ADMIN",
+  DOCTOR: "DOCTOR",
+  RECEPTIONIST: "RECEPTIONIST",
+  PATIENT: "PATIENT",
+});
+
+const PLANS = Object.freeze({
+  FREE: "FREE",
+  PRO: "PRO",
 });
 
 const HTTP_STATUS = Object.freeze({
@@ -17,4 +24,4 @@ const HTTP_STATUS = Object.freeze({
   INTERNAL_SERVER_ERROR: 500,
 });
 
-module.exports = { ROLES, HTTP_STATUS };
+module.exports = { ROLES, HTTP_STATUS, PLANS };

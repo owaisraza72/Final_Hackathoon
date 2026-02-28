@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import {
-  Shield,
-  Zap,
-  Lock,
-  Database,
-  Gauge,
-  Boxes,
+  Stethoscope,
+  Bot,
+  CalendarCheck,
+  ShieldCheck,
+  Activity,
+  UserRound,
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
@@ -16,143 +16,208 @@ import {
 const HomePage = () => {
   const { isAuthenticated, user } = useAuth();
 
+  const getDashboardRoute = () => {
+    switch (user?.role) {
+      case "ADMIN":
+        return ROUTES.ADMIN_DASHBOARD;
+      case "DOCTOR":
+        return ROUTES.DOCTOR_DASHBOARD;
+      case "RECEPTIONIST":
+        return ROUTES.RECEPTIONIST_DASHBOARD;
+      case "PATIENT":
+        return ROUTES.PATIENT_DASHBOARD;
+      default:
+        return "/";
+    }
+  };
+
   const features = [
     {
-      icon: Shield,
-      title: "Secure Authentication",
-      desc: "JWT access & refresh tokens with HTTP-only cookies and CORS protection",
+      icon: Stethoscope,
+      title: "Digital Prescriptions",
+      desc: "Generate, manage, and download PDF prescriptions seamlessly.",
+      color: "from-teal-500 to-emerald-500",
+    },
+    {
+      icon: Bot,
+      title: "Gemini AI Assistant",
+      desc: "Smart AI-powered diagnosis suggestions and medical explanations.",
+      color: "from-indigo-500 to-purple-500",
+    },
+    {
+      icon: CalendarCheck,
+      title: "Smart Scheduling",
+      desc: "Effortless appointment booking and daily schedule management.",
       color: "from-blue-500 to-cyan-500",
     },
     {
-      icon: Lock,
-      title: "RBAC & Ownership",
-      desc: "Role-based access control with resource ownership protection",
-      color: "from-purple-500 to-pink-500",
+      icon: ShieldCheck,
+      title: "Secure Access",
+      desc: "Role-Based Access Control (RBAC) ensuring data privacy.",
+      color: "from-slate-600 to-slate-800",
     },
     {
-      icon: Zap,
-      title: "Production Ready",
-      desc: "Docker, rate limiting, validation, and error handling at every layer",
+      icon: Activity,
+      title: "Live Analytics",
+      desc: "Interactive Recharts dashboards for admins and doctors.",
       color: "from-orange-500 to-red-500",
     },
     {
-      icon: Database,
-      title: "MongoDB Integration",
-      desc: "Mongoose ORM with optimized queries and data validation",
-      color: "from-green-500 to-teal-500",
-    },
-    {
-      icon: Gauge,
-      title: "Performance",
-      desc: "Optimized caching, pagination, and efficient API endpoints",
-      color: "from-yellow-500 to-orange-500",
-    },
-    {
-      icon: Boxes,
-      title: "Modular Architecture",
-      desc: "Well-organized project structure for scalability",
-      color: "from-indigo-500 to-blue-500",
+      icon: UserRound,
+      title: "Multi-Role Portal",
+      desc: "Dedicated workspaces for Admins, Doctors, Receptionists & Patients.",
+      color: "from-pink-500 to-rose-500",
     },
   ];
 
-  const techStack = [
-    { category: "Frontend", items: ["React 18", "Vite", "Redux Toolkit", "RTK Query"] },
-    { category: "Backend", items: ["Node.js", "Express", "MongoDB", "Mongoose"] },
-    { category: "Tools", items: ["Docker", "JWT", "Bcrypt", "Multer"] },
+  const benefits = [
+    {
+      role: "For Doctors",
+      items: [
+        "AI Diagnosis Support",
+        "Patient History Access",
+        "Digital Prescriptions",
+      ],
+    },
+    {
+      role: "For Patients",
+      items: [
+        "Easy Appointment Booking",
+        "Downloadable PDFs",
+        "AI Medical Explanations",
+      ],
+    },
+    {
+      role: "For Clinics",
+      items: [
+        "Centralized Management",
+        "Revenue Analytics",
+        "Free / PRO SaaS Plans",
+      ],
+    },
   ];
 
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 px-4 py-12 md:py-32">
-        <div className="container mx-auto max-w-6xl">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-teal-50 px-4 py-16 md:py-32">
+        <div className="container mx-auto max-w-6xl relative z-10">
           {/* Background Elements */}
           <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
-            <div className="absolute -right-40 -bottom-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
+            <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl animate-pulse" />
+            <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
           </div>
 
-          <div className="space-y-8 text-center">
+          <div className="space-y-8 text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-block">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                Production Ready MERN Stack
+            <div className="inline-block animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <span className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-700 shadow-sm">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500"></span>
+                </span>
+                SaaS Clinic Management Platform
               </span>
             </div>
 
             {/* Heading */}
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-7xl font-bold tracking-tighter">
-                Build Modern Apps{" "}
-                <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
-                  Faster
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900">
+                Modernize Your Clinic with{" "}
+                <span className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                  ClinicOS
                 </span>
               </h1>
-              <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed">
-                A production-ready MERN stack boilerplate with enterprise-grade
-                authentication, role-based access control, and everything you need to
-                launch your next project in days, not months.
+              <p className="mx-auto max-w-2xl text-lg md:text-xl text-slate-600 leading-relaxed font-medium">
+                The all-in-one scalable platform digitizing clinic operations.
+                From smart AI diagnosis to seamless appointment booking, built
+                for modern healthcare.
               </p>
             </div>
 
             {/* CTA Buttons */}
-            {isAuthenticated ? (
-              <div className="space-y-4">
-                <div className="inline-block rounded-lg border border-primary/20 bg-primary/5 px-6 py-4 text-center">
-                  <p className="text-lg">
-                    Welcome back, <strong className="text-primary">{user?.name}</strong>
-                    ! 👋
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Role: <span className="font-semibold">{user?.role}</span>
-                  </p>
+            <div className="pt-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+              {isAuthenticated ? (
+                <div className="space-y-6 flex flex-col items-center">
+                  <div className="inline-block rounded-2xl border border-teal-100 bg-white/60 backdrop-blur-md px-8 py-5 shadow-sm text-center">
+                    <p className="text-lg text-slate-700">
+                      Welcome back,{" "}
+                      <strong className="text-teal-700">{user?.name}</strong>!
+                      🩺
+                    </p>
+                    <p className="text-sm text-slate-500 mt-1 font-medium">
+                      Signed in as{" "}
+                      <span className="uppercase tracking-wider text-teal-600 font-bold">
+                        {user?.role}
+                      </span>
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    asChild
+                    className="bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/20 px-8 h-12 text-base rounded-full"
+                  >
+                    <Link to={getDashboardRoute()}>
+                      Go to Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button size="lg" asChild className="gap-2 px-8">
-                  <Link to={ROUTES.REGISTER}>
-                    Get Started <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link to={ROUTES.LOGIN}>Sign In</Link>
-                </Button>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <Button
+                    size="lg"
+                    asChild
+                    className="bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/20 px-8 h-14 text-base rounded-full transition-all hover:scale-105"
+                  >
+                    <Link to={ROUTES.REGISTER}>
+                      Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="h-14 px-8 text-base rounded-full border-2 border-slate-200 hover:border-teal-600 hover:text-teal-700 hover:bg-teal-50 transition-all"
+                  >
+                    <Link to={ROUTES.LOGIN}>Sign In</Link>
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="px-4 py-16 md:py-24">
+      <section className="px-4 py-20 md:py-32 bg-white">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold">Enterprise Features</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Everything you need for production-grade applications
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
+              Powerful Features
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+              Everything required to manage a modern clinic efficiently, packed
+              into one seamless experience.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map(({ icon: Icon, title, desc, color }) => (
               <div
                 key={title}
-                className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur transition-all hover:border-primary/50 hover:bg-card hover:shadow-lg"
+                className="group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:shadow-teal-900/5 hover:-translate-y-1"
               >
-                {/* Gradient Background */}
-                <div
-                  className={`absolute inset-0 -z-10 bg-gradient-to-br ${color} opacity-0 transition-opacity group-hover:opacity-5`}
-                />
-
-                <div className="p-6 space-y-4">
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${color} text-white`}>
-                    <Icon className="h-6 w-6" />
+                <div className="space-y-6">
+                  <div
+                    className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${color} text-white shadow-inner`}
+                  >
+                    <Icon className="h-7 w-7" />
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">{title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                  <div className="space-y-3">
+                    <h3 className="font-bold text-xl text-slate-900">
+                      {title}
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed font-medium">
                       {desc}
                     </p>
                   </div>
@@ -163,27 +228,35 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Tech Stack */}
-      <section className="px-4 py-16 md:py-24 bg-muted/30">
+      {/* Benefits Section */}
+      <section className="px-4 py-20 md:py-32 bg-slate-50 border-y border-slate-100">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold">Built With Modern Tech</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Leveraging the best tools and frameworks in the ecosystem
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
+              Built For Everyone
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+              Tailored experiences for every role within your healthcare
+              ecosystem.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {techStack.map(({ category, items }) => (
+            {benefits.map(({ role, items }) => (
               <div
-                key={category}
-                className="rounded-xl border border-border/50 bg-card p-6 space-y-4"
+                key={role}
+                className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:border-teal-200 transition-colors"
               >
-                <h3 className="font-semibold text-lg text-primary">{category}</h3>
-                <ul className="space-y-3">
+                <h3 className="font-bold text-2xl text-teal-700 mb-6 pb-4 border-b border-slate-100">
+                  {role}
+                </h3>
+                <ul className="space-y-4">
                   {items.map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    <li
+                      key={item}
+                      className="flex items-center gap-3 text-slate-700 font-medium"
+                    >
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -195,21 +268,34 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 py-16 md:py-24">
-        <div className="container mx-auto max-w-4xl">
-          <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20 p-8 md:p-12 text-center space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold">Ready to get started?</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Join developers building production-ready applications with our
-              comprehensive boilerplate. Start in minutes, not months.
-            </p>
-            {!isAuthenticated && (
-              <Button size="lg" asChild className="gap-2">
-                <Link to={ROUTES.REGISTER}>
-                  Create Your First Project <ArrowRight className="h-5 w-5" />
-                </Link>
-              </Button>
-            )}
+      <section className="px-4 py-20 md:py-32 bg-white">
+        <div className="container mx-auto max-w-5xl">
+          <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-teal-600 to-cyan-700 p-10 md:p-20 text-center shadow-2xl">
+            {/* Decorative circles */}
+            <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-black/10 blur-2xl" />
+
+            <div className="relative z-10 space-y-8">
+              <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                Upgrade Your Clinic Today
+              </h2>
+              <p className="text-teal-50 text-xl max-w-2xl mx-auto opacity-90">
+                Join our scalable SaaS platform. Improve efficiency and provide
+                intelligent AI assistance to your staff and patients.
+              </p>
+              {!isAuthenticated && (
+                <Button
+                  size="lg"
+                  asChild
+                  className="bg-white text-teal-800 hover:bg-slate-50 h-14 px-10 text-lg rounded-full shadow-xl transition-transform hover:scale-105"
+                >
+                  <Link to={ROUTES.REGISTER}>
+                    Register Your Clinic Now{" "}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </section>

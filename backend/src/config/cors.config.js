@@ -2,8 +2,11 @@ const env = require("./env.config");
 
 const corsOptions = {
   origin: function (origin, callback) {
+    if (env.NODE_ENV === "development") {
+      return callback(null, true);
+    }
     // Parse multiple URLs from CLIENT_URL (comma-separated)
-    const allowedOrigins = env.CLIENT_URL.split(",").map(url => url.trim());
+    const allowedOrigins = env.CLIENT_URL.split(",").map((url) => url.trim());
 
     // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin || allowedOrigins.includes(origin)) {

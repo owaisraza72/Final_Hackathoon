@@ -41,7 +41,11 @@ const LoginPage = () => {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    if (!isValid) {
+      toast.error("Please provide email and password.");
+    }
+    return isValid;
   };
 
   const handleChange = (e) => {
@@ -57,12 +61,22 @@ const LoginPage = () => {
     if (!validateForm()) return;
 
     try {
-      await login(formData).unwrap();
+      const res = await login(formData).unwrap();
+      const userRole = res.data?.user?.role;
+
+      let targetPath = ROUTES.HOME;
+      if (userRole === "ADMIN") targetPath = ROUTES.ADMIN_DASHBOARD;
+      else if (userRole === "DOCTOR") targetPath = ROUTES.DOCTOR_DASHBOARD;
+      else if (userRole === "RECEPTIONIST")
+        targetPath = ROUTES.RECEPTIONIST_DASHBOARD;
+      else if (userRole === "PATIENT") targetPath = ROUTES.PATIENT_DASHBOARD;
+
+      const destination = location.state?.from?.pathname || targetPath;
+
       toast.success("Logged in successfully!");
-      navigate(from, { replace: true });
+      navigate(destination, { replace: true });
     } catch (err) {
-      const message =
-        err?.data?.message || "Login failed. Please try again.";
+      const message = err?.data?.message || "Login failed. Please try again.";
       toast.error(message);
 
       if (err?.data?.errors?.length) {
@@ -131,10 +145,7 @@ const LoginPage = () => {
                 <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
-                <Link
-                  to="#"
-                  className="text-xs text-primary hover:underline"
-                >
+                <Link to="#" className="text-xs text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>

@@ -3,11 +3,10 @@ const User = require("../models/user.model");
 const ApiError = require("../utils/ApiError");
 const asyncHandler = require("../utils/asyncHandler");
 const env = require("../config/env.config");
-const { HTTP_STATUS } = require("../constants");
+const { HTTP_STATUS, ROLES } = require("../constants");
 
 /**
- * Verifies access token from cookies or Authorization header.
- * Attaches authenticated user to req.user
+ * Authenticate user via Access Token
  */
 const authenticate = asyncHandler(async (req, _res, next) => {
   const token =
@@ -17,7 +16,7 @@ const authenticate = asyncHandler(async (req, _res, next) => {
   if (!token) {
     throw new ApiError(
       HTTP_STATUS.UNAUTHORIZED,
-      "Authentication required. Please login."
+      "Authentication required. Please login.",
     );
   }
 
@@ -33,7 +32,7 @@ const authenticate = asyncHandler(async (req, _res, next) => {
   if (!user || !user.isActive) {
     throw new ApiError(
       HTTP_STATUS.UNAUTHORIZED,
-      "User not found or account is deactivated"
+      "User not found or account is deactivated",
     );
   }
 
@@ -42,22 +41,19 @@ const authenticate = asyncHandler(async (req, _res, next) => {
 });
 
 /**
- * RBAC — Restrict access to specific roles
- * Usage: authorize("admin") or authorize("admin", "moderator")
+ * Role-Based Access Control
+ * Usage: authorize(ROLES.ADMIN)
  */
-const authorize = (...roles) => {
+const authorize = (...allowedRoles) => {
   return (req, _res, next) => {
     if (!req.user) {
-      throw new ApiError(
-        HTTP_STATUS.UNAUTHORIZED,
-        "Authentication required"
-      );
+      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Authentication required");
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!allowedRoles.includes(req.user.role)) {
       throw new ApiError(
         HTTP_STATUS.FORBIDDEN,
-        `Access denied. Role '${req.user.role}' is not authorized to access this resource.`
+        `Access denied. Role '${req.user.role}' is not authorized to access this resource.`,
       );
     }
 
@@ -66,19 +62,20 @@ const authorize = (...roles) => {
 };
 
 /**
- * Ownership check — ensures user can only access their own data
- * Compares req.params.id with req.user._id
- * Admins can bypass this check
+ * Ownership Authorization
+ * Allows user to access only their own data
+ * Admin can bypass
  */
 const authorizeOwner = (req, _res, next) => {
   const paramId = req.params.id;
   const userId = req.user._id.toString();
-  const isAdmin = req.user.role === "admin";
+
+  const isAdmin = req.user.role === ROLES.ADMIN;
 
   if (paramId !== userId && !isAdmin) {
     throw new ApiError(
       HTTP_STATUS.FORBIDDEN,
-      "Access denied. You can only access your own data."
+      "Access denied. You can only access your own data.",
     );
   }
 

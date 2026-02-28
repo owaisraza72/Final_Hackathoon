@@ -20,8 +20,10 @@ const useAuth = () => {
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const [logoutFn, { isLoading: isLoggingOut }] = useLogoutMutation();
 
-  const isAdmin = role === "admin";
-  const isUser = role === "user";
+  const isAdmin = role === "ADMIN";
+  const isDoctor = role === "DOCTOR";
+  const isReceptionist = role === "RECEPTIONIST";
+  const isPatient = role === "PATIENT";
 
   return {
     // State
@@ -29,7 +31,9 @@ const useAuth = () => {
     isAuthenticated,
     role,
     isAdmin,
-    isUser,
+    isDoctor,
+    isReceptionist,
+    isPatient,
 
     // Actions
     login,
