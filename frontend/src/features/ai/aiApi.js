@@ -11,7 +11,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result?.error?.status === 401) {
     const refreshResult = await baseQuery(
-      { url: "/auth/refresh-token", method: "POST" },
+      { url: "auth/refresh-token", method: "POST" },
       api,
       extraOptions,
     );
@@ -30,13 +30,13 @@ export const aiApi = createApi({
   endpoints: (builder) => ({
     getAiDiagnosis: builder.mutation({
       query: (data) => ({
-        url: "/ai/diagnose",
+        url: "ai/diagnosis",
         method: "POST",
         body: data,
       }),
     }),
     explainPrescription: builder.query({
-      query: (prescriptionId) => `/ai/explain/${prescriptionId}`,
+      query: (prescriptionId) => `ai/explain/${prescriptionId}`,
     }),
   }),
 });

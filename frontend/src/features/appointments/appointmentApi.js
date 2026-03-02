@@ -11,7 +11,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result?.error?.status === 401) {
     const refreshResult = await baseQuery(
-      { url: "/auth/refresh-token", method: "POST" },
+      { url: "auth/refresh-token", method: "POST" },
       api,
       extraOptions,
     );
@@ -31,7 +31,7 @@ export const appointmentApi = createApi({
   endpoints: (builder) => ({
     bookAppointment: builder.mutation({
       query: (data) => ({
-        url: "/appointments",
+        url: "appointments",
         method: "POST",
         body: data,
       }),
@@ -39,22 +39,22 @@ export const appointmentApi = createApi({
     }),
     listAppointments: builder.query({
       query: ({ status, date } = {}) => {
-        let url = "/appointments?";
-        if (status) url += `status=${status}&`;
-        if (date) url += `date=${date}`;
-        return url;
+        const params = new URLSearchParams();
+        if (status) params.set("status", status);
+        if (date) params.set("date", date);
+        return `appointments?${params.toString()}`;
       },
       providesTags: ["Appointment"],
       transformResponse: (res) => res.data?.appointments || res.data,
     }),
     getDailySchedule: builder.query({
-      query: (date) => `/appointments/schedule?date=${date}`,
+      query: (date) => `appointments/schedule?date=${date}`,
       providesTags: ["Appointment"],
       transformResponse: (res) => res.data?.appointments || res.data,
     }),
     updateStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/appointments/${id}/status`,
+        url: `appointments/${id}/status`,
         method: "PATCH",
         body: { status },
       }),
@@ -62,7 +62,7 @@ export const appointmentApi = createApi({
     }),
     cancelAppointment: builder.mutation({
       query: (id) => ({
-        url: `/appointments/${id}`,
+        url: `appointments/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Appointment"],

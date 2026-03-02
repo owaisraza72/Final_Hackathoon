@@ -36,6 +36,13 @@ const authenticate = asyncHandler(async (req, _res, next) => {
     );
   }
 
+  // ── Lifecycle log: trace role for debugging ──
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `[Auth] Authenticated → id=${user._id} | role=${user.role} | ${req.method} ${req.originalUrl}`,
+    );
+  }
+
   req.user = user;
   next();
 });

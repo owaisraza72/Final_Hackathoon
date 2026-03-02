@@ -5,18 +5,9 @@ const { HTTP_STATUS } = require("../constants");
 const adminService = require("../services/admin.service");
 
 class AdminController {
-  // ── POST /api/v1/admin/create ──
+  // ── POST /api/v1/admin/users ──
   createUser = asyncHandler(async (req, res) => {
-    const { name, email, password, role } = req.body;
-    const clinicId = req.user.clinicId; // Admin's own clinic
-
-    const user = await adminService.createUser({
-      name,
-      email,
-      password,
-      role,
-      clinicId,
-    });
+    const user = await adminService.createUser(req.body);
 
     res
       .status(HTTP_STATUS.CREATED)
@@ -24,17 +15,16 @@ class AdminController {
         new ApiResponse(
           HTTP_STATUS.CREATED,
           { user },
-          "User created successfully",
+          "Doctor/Receptionist created successfully",
         ),
       );
   });
 
-  // ── GET /api/v1/admin/list/:role ──
+  // ── GET /api/v1/admin/users/:role ──
   listUsers = asyncHandler(async (req, res) => {
     const role = req.params.role.toUpperCase();
-    const clinicId = req.user.clinicId;
 
-    const users = await adminService.listUsersByRole(role, clinicId);
+    const users = await adminService.listUsersByRole(role);
 
     res
       .status(HTTP_STATUS.OK)
@@ -47,12 +37,11 @@ class AdminController {
       );
   });
 
-  // ── PATCH /api/v1/admin/update/:id ──
+  // ── PATCH /api/v1/admin/users/:id ──
   updateUser = asyncHandler(async (req, res) => {
     const id = req.params.id;
-    const updateData = req.body;
 
-    const updatedUser = await adminService.updateUser(id, updateData);
+    const updatedUser = await adminService.updateUser(id, req.body);
 
     res
       .status(HTTP_STATUS.OK)
@@ -65,7 +54,7 @@ class AdminController {
       );
   });
 
-  // ── DELETE /api/v1/admin/delete/:id ──
+  // ── DELETE /api/v1/admin/users/:id ──
   deleteUser = asyncHandler(async (req, res) => {
     const id = req.params.id;
 
@@ -84,9 +73,9 @@ class AdminController {
 
   // ── GET /api/v1/admin/analytics ──
   analytics = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
+    const adminId = req.user._id;
 
-    const data = await adminService.getAnalytics(clinicId);
+    const data = await adminService.getAnalytics(adminId);
 
     res
       .status(HTTP_STATUS.OK)
@@ -95,20 +84,19 @@ class AdminController {
       );
   });
 
-  // ── PATCH /api/v1/admin/subscription ──
-  updateSubscription = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
-    const { plan } = req.body;
+  // ── PATCH /api/v1/admin/settings ──
+  updateSettings = asyncHandler(async (req, res) => {
+    const adminId = req.user._id;
 
-    const clinic = await adminService.updateClinicPlan(clinicId, plan);
+    const admin = await adminService.updateSettings(adminId, req.body);
 
     res
       .status(HTTP_STATUS.OK)
       .json(
         new ApiResponse(
           HTTP_STATUS.OK,
-          { clinic },
-          "Subscription plan updated successfully",
+          { user: admin },
+          "Clinic settings updated successfully",
         ),
       );
   });

@@ -7,7 +7,7 @@ import { useListPatientsQuery } from "@/features/patients/patientApi";
 import { useListUsersQuery } from "@/features/admin/adminApi";
 import PageHeader from "@/components/ui/PageHeader";
 import { toast } from "sonner";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const appointmentSchema = z.object({
@@ -64,132 +64,189 @@ const BookAppointment = () => {
   const timeSlots = generateTimeSlots();
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in">
-      <PageHeader
-        title="Book Appointment"
-        description="Schedule an appointment with a doctor."
-      />
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-8"
-      >
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Patient
-            </label>
-            <select
-              {...register("patientId")}
-              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-            >
-              <option value="">-- Select Patient --</option>
-              {!patientsLoading &&
-                patients?.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name} ({p.contact})
-                  </option>
-                ))}
-            </select>
-            {errors.patientId && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.patientId.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Doctor
-            </label>
-            <select
-              {...register("doctorId")}
-              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-            >
-              <option value="">-- Select Doctor --</option>
-              {!doctorsLoading &&
-                doctors?.map((d) => (
-                  <option key={d._id} value={d._id}>
-                    Dr. {d.name}
-                  </option>
-                ))}
-            </select>
-            {errors.doctorId && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.doctorId.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Date
-            </label>
-            <input
-              type="date"
-              {...register("date")}
-              min={new Date().toISOString().split("T")[0]}
-              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-            />
-            {errors.date && (
-              <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Reason (Optional)
-            </label>
-            <input
-              type="text"
-              {...register("reason")}
-              placeholder="e.g. Follow-up, Fever"
-              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-            />
-          </div>
+    <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
+        <PageHeader
+          title="Clinical Scheduler"
+          description="Coordinate patient-doctor encounters with precision."
+        />
+        <div className="h-12 px-6 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center gap-3">
+          <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+          <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">
+            Global Scheduling Active
+          </span>
         </div>
+      </div>
 
-        {/* Custom Visual Time Slot Picker */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-3 border-b border-slate-100 pb-2">
-            Available Time Slots
-          </label>
-          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
-            {timeSlots.map((slot) => (
-              <button
-                key={slot}
-                type="button"
-                onClick={() =>
-                  setValue("timeSlot", slot, { shouldValidate: true })
-                }
-                className={`py-2 px-1 text-sm font-medium rounded-lg text-center transition-all border ${
-                  selectedTimeSlot === slot
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50"
-                }`}
-              >
-                {slot}
-              </button>
-            ))}
-          </div>
-          {errors.timeSlot && (
-            <p className="text-red-500 text-sm mt-3">
-              {errors.timeSlot.message}
+      <div className="grid lg:grid-cols-4 gap-8">
+        {/* Helper Info Sidebar */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-indigo-900 rounded-[32px] p-8 text-white premium-shadow relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <CalendarCheck className="h-24 w-24" />
+            </div>
+            <h3 className="text-xl font-black tracking-tight mb-4 relative z-10">
+              Scheduling Intelligence
+            </h3>
+            <p className="text-indigo-200 text-xs font-semibold leading-relaxed relative z-10">
+              Please ensure all clinical data is verified before confirming the
+              appointment slot.
             </p>
-          )}
+            <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
+              <p className="text-[10px] font-black uppercase text-indigo-400 tracking-widest mb-2">
+                Selected Patient
+              </p>
+              <p className="text-sm font-bold truncate">
+                {patients?.find((p) => p._id === watch("patientId"))?.name ||
+                  "None Selected"}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex justify-end pt-4 border-t border-slate-100 mt-8">
-          <button
-            type="submit"
-            disabled={isBooking}
-            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
+        {/* Main Form */}
+        <div className="lg:col-span-3">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-white p-10 rounded-[40px] premium-shadow border border-slate-200/60 space-y-10"
           >
-            <CalendarCheck className="h-5 w-5" />
-            {isBooking ? "Booking..." : "Book Appointment"}
-          </button>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                  Patient Entry
+                </label>
+                <select
+                  {...register("patientId")}
+                  className="w-full h-14 pl-5 pr-10 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none appearance-none"
+                >
+                  <option value="">-- Select Registered Patient --</option>
+                  {!patientsLoading &&
+                    patients?.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.name} ({p.contact})
+                      </option>
+                    ))}
+                </select>
+                {errors.patientId && (
+                  <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
+                    {errors.patientId.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                  Medical Practitioner
+                </label>
+                <select
+                  {...register("doctorId")}
+                  className="w-full h-14 pl-5 pr-10 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none appearance-none"
+                >
+                  <option value="">-- Assign Doctor --</option>
+                  {!doctorsLoading &&
+                    doctors?.map((d) => (
+                      <option key={d._id} value={d._id}>
+                        Dr. {d.name}
+                      </option>
+                    ))}
+                </select>
+                {errors.doctorId && (
+                  <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
+                    {errors.doctorId.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                  Consultation Date
+                </label>
+                <input
+                  type="date"
+                  {...register("date")}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="w-full h-14 px-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none"
+                />
+                {errors.date && (
+                  <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
+                    {errors.date.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                  Primary Concern
+                </label>
+                <input
+                  type="text"
+                  {...register("reason")}
+                  placeholder="e.g. Chronic Pain, Follow-up"
+                  className="w-full h-14 px-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Time Slot Picker */}
+            <div className="pt-6 border-t border-slate-100">
+              <div className="flex items-center justify-between mb-8">
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                  Vault Time Allocation
+                </label>
+                <div className="px-3 py-1 bg-indigo-50 rounded-lg text-indigo-600 text-[10px] font-black uppercase tracking-widest">
+                  Availability: High
+                </div>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                {timeSlots.map((slot) => {
+                  const isActive = selectedTimeSlot === slot;
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() =>
+                        setValue("timeSlot", slot, { shouldValidate: true })
+                      }
+                      className={`h-12 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 border flex items-center justify-center ${
+                        isActive
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-500/20 scale-105"
+                          : "bg-white text-slate-400 border-slate-100 hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50/30"
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.timeSlot && (
+                <p className="text-[10px] font-bold text-red-500 mt-4 ml-1">
+                  {errors.timeSlot.message}
+                </p>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-8">
+              <button
+                type="submit"
+                disabled={isBooking}
+                className="h-16 px-12 bg-slate-900 hover:bg-teal-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-[24px] shadow-2xl transition-all duration-500 flex items-center gap-4 group active:scale-95 disabled:opacity-50"
+              >
+                {isBooking ? (
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Authorizing Slot...
+                  </div>
+                ) : (
+                  <>
+                    Complete Booking
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

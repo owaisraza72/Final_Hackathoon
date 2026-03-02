@@ -119,48 +119,80 @@ const Sidebar = () => {
   const navLinks = getNavLinks(role);
 
   return (
-    <aside className="w-64 bg-slate-900 text-white flex flex-col items-center">
+    <aside className="w-72 sidebar-gradient text-white flex flex-col shrink-0 relative z-20">
       {/* Clinic/App Logo Area */}
-      <div className="h-16 flex items-center justify-center w-full border-b border-slate-800">
-        <h1 className="text-xl font-bold tracking-wider text-teal-400">
-          ClinicOS
-        </h1>
+      <div className="h-20 flex items-center px-8 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 clinical-gradient rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20">
+            <Stethoscope className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-black tracking-tight text-white leading-none">
+              Clinic<span className="text-teal-400">OS</span>
+            </h1>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mt-1">
+              Smart Healthcare
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 w-full px-4 py-6 space-y-2">
+      <nav className="flex-1 w-full px-4 space-y-1.5 overflow-y-auto pt-2">
+        <p className="px-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">
+          Menu
+        </p>
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path;
           return (
             <Link
               key={link.path}
               to={link.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${
+              className={`flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-300 group ${
                 isActive
-                  ? "bg-teal-500 text-white shadow-lg"
-                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  ? "bg-teal-500/15 text-teal-400 border border-teal-500/20 shadow-[0_0_20px_rgba(20,184,166,0.1)]"
+                  : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
               }`}
             >
-              {link.icon}
-              <span className="font-medium">{link.name}</span>
+              <div
+                className={`transition-colors duration-300 ${isActive ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"}`}
+              >
+                {link.icon}
+              </div>
+              <span className="font-semibold text-[15px]">{link.name}</span>
+              {isActive && (
+                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,1)]" />
+              )}
             </Link>
           );
         })}
       </nav>
 
       {/* Subscription/Clinic Info */}
-      {user?.clinicId && role === "ADMIN" && (
-        <div className="mb-6 px-4 w-full">
-          <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-            <p className="text-xs text-slate-400 mb-1">Current Plan</p>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center rounded-md bg-teal-400/10 px-2 py-1 text-xs font-medium text-teal-400 ring-1 ring-inset ring-teal-400/20">
-                PRO ACTIVE
-              </span>
-            </div>
+      <div className="p-4 mt-auto">
+        <div className="bg-slate-800/40 p-5 rounded-2xl border border-white/5 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-bold text-slate-500 uppercase">
+              System Status
+            </p>
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-0.5">
+              Clinic OS Matrix
+            </span>
+            <span
+              className={`inline-flex w-fit items-center rounded-lg px-2.5 py-1 text-[10px] font-black border uppercase tracking-wider ${
+                user?.subscriptionPlan === "PRO"
+                  ? "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                  : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+              }`}
+            >
+              {user?.subscriptionPlan || "FREE"} Tier
+            </span>
           </div>
         </div>
-      )}
+      </div>
     </aside>
   );
 };

@@ -90,145 +90,115 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-muted/30">
-      {/* Background Elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -right-40 -bottom-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden bg-slate-50">
+      {/* Dynamic Background Elements */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -left-[10%] -top-[10%] h-[60%] w-[60%] rounded-full bg-teal-500/10 blur-[120px] animate-pulse" />
+        <div
+          className="absolute -right-[10%] -bottom-[10%] h-[60%] w-[60%] rounded-full bg-indigo-500/10 blur-[120px] animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
       </div>
 
-      <Card className="w-full max-w-md shadow-lg">
-        {/* Header */}
-        <CardHeader className="space-y-2 text-center bg-gradient-to-b from-primary/5 to-transparent pb-6">
-          <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <LogIn className="h-6 w-6 text-primary" />
+      <div className="w-full max-w-[480px] relative z-10 glass-card p-1 shadow-2xl rounded-[32px] animate-in fade-in zoom-in duration-1000">
+        <div className="bg-white rounded-[31px] overflow-hidden">
+          {/* Header Section */}
+          <div className="pt-12 pb-8 px-10 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 via-indigo-500 to-teal-500 animate-shimmer" />
+            <div className="mx-auto h-16 w-16 mb-6 clinical-gradient rounded-2xl flex items-center justify-center shadow-xl shadow-teal-500/20 rotate-3 hover:rotate-0 transition-transform duration-500">
+              <LogIn className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-2">
+              Clinic<span className="text-teal-600">OS</span>
+            </h1>
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">
+              Precision Practice Management
+            </p>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription className="text-base">
-            Sign in to access your account and continue where you left off
-          </CardDescription>
-        </CardHeader>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-5 pt-6">
-            {/* Email Field */}
-            <div className="space-y-3">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                autoComplete="email"
-                className={`transition-colors ${
-                  errors.email
-                    ? "border-destructive focus-visible:ring-destructive"
-                    : ""
-                }`}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
+          <form onSubmit={handleSubmit} className="px-10 pb-12 space-y-6">
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                  Email Clinical ID
                 </Label>
-                <Link to="#" className="text-xs text-primary hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  autoComplete="current-password"
-                  className={`pr-10 transition-colors ${
-                    errors.password
-                      ? "border-destructive focus-visible:ring-destructive"
-                      : ""
-                  }`}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
+                <div className="relative group">
+                  <Input
+                    name="email"
+                    type="email"
+                    placeholder="dr.smith@clinicos.pro"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="h-14 bg-slate-50/50 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all font-medium pl-5"
+                  />
+                  {errors.email && (
+                    <p className="text-[10px] font-bold text-red-500 mt-1 flex items-center gap-1 ml-1 animate-in slide-in-from-top-1">
+                      <AlertCircle className="h-3 w-3" /> {errors.email}
+                    </p>
                   )}
-                </button>
+                </div>
               </div>
-              {errors.password && (
-                <p className="text-sm text-destructive flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  {errors.password}
-                </p>
-              )}
-            </div>
-          </CardContent>
 
-          {/* Footer */}
-          <CardFooter className="flex flex-col space-y-4 pt-6">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center ml-1">
+                  <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">
+                    Secret Vault Key
+                  </Label>
+                </div>
+                <div className="relative group">
+                  <Input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="h-14 bg-slate-50/50 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all font-medium pl-5 pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                  {errors.password && (
+                    <p className="text-[10px] font-bold text-red-500 mt-1 flex items-center gap-1 ml-1 animate-in slide-in-from-top-1">
+                      <AlertCircle className="h-3 w-3" /> {errors.password}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <Button
-              type="submit"
-              className="w-full h-11 gap-2"
               disabled={isLoggingIn}
+              className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all duration-300 shadow-xl shadow-slate-900/10 group"
             >
               {isLoggingIn ? (
-                <>
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Signing in...
-                </>
+                <div className="flex items-center gap-3">
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Decrypting...
+                </div>
               ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="h-4 w-4" />
-                </>
+                <div className="flex items-center justify-center gap-3">
+                  Access Portal
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
               )}
             </Button>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  New to MERN?
-                </span>
-              </div>
+            <div className="pt-6 border-t border-slate-100 text-center">
+              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">
+                Protected by Clinical-Grade Security
+              </p>
             </div>
-
-            <p className="text-sm text-muted-foreground text-center">
-              Don&apos;t have an account?{" "}
-              <Link
-                to={ROUTES.REGISTER}
-                className="font-semibold text-primary hover:underline transition-colors"
-              >
-                Create one now
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

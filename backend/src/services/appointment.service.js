@@ -4,17 +4,15 @@ const Appointment = AppointmentModel;
 const APPOINTMENT_STATUS = AppointmentModel.APPOINTMENT_STATUS;
 const ApiError = require("../utils/ApiError");
 const { HTTP_STATUS, ROLES } = require("../constants");
-const mongoose = require("mongoose");
 
 class AppointmentService {
   /**
    * Book a new appointment
    */
-  bookAppointment = async (data, receptionistId, clinicId) => {
+  bookAppointment = async (data, receptionistId) => {
     const { patientId, doctorId, date, timeSlot, reason } = data;
 
     // Check if the doctor already has an appointment at this slot
-    // The model has a unique index, but we check manually for a better error message
     const existingAppointment = await Appointment.findOne({
       doctorId,
       date: new Date(date),
@@ -33,7 +31,6 @@ class AppointmentService {
       patientId,
       doctorId,
       receptionistId,
-      clinicId,
       date: new Date(date),
       timeSlot,
       reason,
@@ -46,8 +43,8 @@ class AppointmentService {
   /**
    * Get all appointments (filtered by role)
    */
-  getAppointments = async (clinicId, { role, userId, status, date }) => {
-    const query = { clinicId };
+  getAppointments = async ({ role, userId, status, date }) => {
+    const query = {};
 
     // Role based filtering
     if (role === ROLES.DOCTOR) {
@@ -68,15 +65,13 @@ class AppointmentService {
   };
 
   /**
-   * Get daily schedule for receptionist
+   * Get daily schedule
    */
-  getDailySchedule = async (clinicId, date) => {
+  getDailySchedule = async (date) => {
     const targetDate = date ? new Date(date) : new Date();
-    // Normalize date to start of day for accurate filtering
     targetDate.setHours(0, 0, 0, 0);
 
     const appointments = await Appointment.find({
-      clinicId,
       date: {
         $gte: targetDate,
         $lt: new Date(targetDate.getTime() + 24 * 60 * 60 * 1000),
@@ -90,15 +85,15 @@ class AppointmentService {
   };
 
   /**
-   * Update appointment status (Doctor action)
+   * Update appointment status
    */
-  updateStatus = async (appointmentId, status, clinicId) => {
+  updateStatus = async (appointmentId, status) => {
     if (!Object.values(APPOINTMENT_STATUS).includes(status)) {
       throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid status");
     }
 
-    const appointment = await Appointment.findOneAndUpdate(
-      { _id: appointmentId, clinicId },
+    const appointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
       { $set: { status } },
       { new: true },
     )
@@ -115,9 +110,9 @@ class AppointmentService {
   /**
    * Cancel appointment
    */
-  cancelAppointment = async (appointmentId, clinicId) => {
-    const appointment = await Appointment.findOneAndUpdate(
-      { _id: appointmentId, clinicId },
+  cancelAppointment = async (appointmentId) => {
+    const appointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
       { $set: { status: APPOINTMENT_STATUS.CANCELLED } },
       { new: true },
     );

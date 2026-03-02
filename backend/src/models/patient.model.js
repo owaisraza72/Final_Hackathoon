@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const patientSchema = new mongoose.Schema(
   {
@@ -17,17 +18,25 @@ const patientSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      required: [true, "Gender is required"],
-      enum: {
-        values: ["male", "female", "other"],
-        message: "{VALUE} is not a valid gender",
-      },
+      required: true,
+      enum: ["male", "female", "other"],
     },
     contact: {
       type: String,
-      required: [true, "Contact number is required"],
+      required: true,
       trim: true,
-      match: [/^[0-9+\-\s]{7,15}$/, "Please provide a valid contact number"],
+      match: [/^[0-9+\-\s]{7,20}$/, "Please provide a valid contact number"],
+    },
+    email: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      sparse: true,
+    },
+    password: {
+      type: String,
+      minlength: [8, "Password must be at least 8 characters"],
+      select: false,
     },
     address: {
       type: String,
@@ -36,17 +45,14 @@ const patientSchema = new mongoose.Schema(
     },
     bloodGroup: {
       type: String,
-      enum: {
-        values: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"],
-        message: "{VALUE} is not a valid blood group",
-      },
+      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"],
       default: "unknown",
     },
     medicalHistory: [
       {
-        condition: { type: String },
-        diagnosedAt: { type: Date },
-        notes: { type: String },
+        condition: String,
+        diagnosedAt: Date,
+        notes: String,
       },
     ],
     allergies: [{ type: String }],
@@ -55,18 +61,10 @@ const patientSchema = new mongoose.Schema(
       phone: { type: String, default: "" },
       relation: { type: String, default: "" },
     },
-    // Who registered this patient (receptionist)
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    // Which clinic this patient belongs to
-    clinicId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
-      required: true,
-      index: true,
     },
     isActive: {
       type: Boolean,
@@ -77,6 +75,7 @@ const patientSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform(_doc, ret) {
+        delete ret.password;
         delete ret.__v;
         return ret;
       },
@@ -84,8 +83,18 @@ const patientSchema = new mongoose.Schema(
   },
 );
 
-// Index for fast search within a clinic
-patientSchema.index({ clinicId: 1, name: 1 });
-patientSchema.index({ clinicId: 1, contact: 1 });
+// ✅ FIXED PRE-SAVE HOOK (NO next() in Mongoose 8)
+patientSchema.pre("save", async function () {
+  if (!this.isModified("password") || !this.password) return;
+
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+// ✅ Compare Password Method
+patientSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) return false;
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.model("Patient", patientSchema);

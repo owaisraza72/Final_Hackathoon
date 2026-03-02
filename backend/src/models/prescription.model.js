@@ -50,12 +50,6 @@ const prescriptionSchema = new mongoose.Schema(
       ref: "Appointment",
       default: null,
     },
-    clinicId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
-      required: true,
-      index: true,
-    },
     diagnosis: {
       type: String,
       required: [true, "Diagnosis is required"],
@@ -96,7 +90,7 @@ const prescriptionSchema = new mongoose.Schema(
   },
 );
 
-// Fast lookup: all prescriptions for a patient within a clinic
-prescriptionSchema.index({ clinicId: 1, patientId: 1, createdAt: -1 });
+// Fast lookup: all prescriptions for a patient
+prescriptionSchema.index({ patientId: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Prescription", prescriptionSchema);

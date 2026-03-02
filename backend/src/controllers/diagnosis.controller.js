@@ -8,12 +8,10 @@ class DiagnosisController {
   // ── POST /api/v1/diagnoses ──
   createDiagnosis = asyncHandler(async (req, res) => {
     const doctorId = req.user._id;
-    const clinicId = req.user.clinicId;
 
     const diagnosis = await diagnosisService.createDiagnosisLog(
       req.body,
       doctorId,
-      clinicId,
     );
 
     res
@@ -29,13 +27,9 @@ class DiagnosisController {
 
   // ── GET /api/v1/diagnoses/patient/:id ──
   getPatientDiagnoses = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const patientId = req.params.id;
 
-    const diagnoses = await diagnosisService.getPatientDiagnoses(
-      patientId,
-      clinicId,
-    );
+    const diagnoses = await diagnosisService.getPatientDiagnoses(patientId);
 
     res
       .status(HTTP_STATUS.OK)
@@ -50,10 +44,9 @@ class DiagnosisController {
 
   // ── GET /api/v1/diagnoses/:id ──
   getDiagnosisDetail = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { id } = req.params;
 
-    const diagnosis = await diagnosisService.getDiagnosisById(id, clinicId);
+    const diagnosis = await diagnosisService.getDiagnosisById(id);
 
     res
       .status(HTTP_STATUS.OK)

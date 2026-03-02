@@ -32,16 +32,16 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     const url = typeof args === "string" ? args : args?.url;
 
     // Don't try refresh for auth endpoints (avoids infinite loop)
-    const shouldSkip = skipRefreshEndpoints.some(
-      (endpoint) => url?.includes(endpoint)
+    const shouldSkip = skipRefreshEndpoints.some((endpoint) =>
+      url?.includes(endpoint),
     );
 
     if (!shouldSkip) {
       // Try refreshing the token
       const refreshResult = await baseQuery(
-        { url: "/auth/refresh-token", method: "POST" },
+        { url: "auth/refresh-token", method: "POST" },
         api,
-        extraOptions
+        extraOptions,
       );
 
       if (refreshResult?.data?.success) {
@@ -65,7 +65,7 @@ export const authApi = createApi({
     // ── Register ──
     register: builder.mutation({
       query: (body) => ({
-        url: "/auth/register",
+        url: "auth/register",
         method: "POST",
         body,
       }),
@@ -82,7 +82,7 @@ export const authApi = createApi({
     // ── Login ──
     login: builder.mutation({
       query: (body) => ({
-        url: "/auth/login",
+        url: "auth/login",
         method: "POST",
         body,
       }),
@@ -99,7 +99,7 @@ export const authApi = createApi({
     // ── Logout ──
     logout: builder.mutation({
       query: () => ({
-        url: "/auth/logout",
+        url: "auth/logout",
         method: "POST",
       }),
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
@@ -114,7 +114,7 @@ export const authApi = createApi({
 
     // ── Get Current User (verify session) ──
     getMe: builder.query({
-      query: () => "/auth/me",
+      query: () => "auth/me",
       providesTags: ["User"],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {

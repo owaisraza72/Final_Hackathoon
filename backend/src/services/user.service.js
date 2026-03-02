@@ -1,14 +1,12 @@
 const User = require("../models/user.model");
 const ApiError = require("../utils/ApiError");
-const { HTTP_STATUS } = require("../constants");
-const {
-  uploadToCloudinary,
-  deleteFromCloudinary,
-} = require("../config/cloudinary.config");
+const { HTTP_STATUS, ROLES } = require("../constants");
+const Patient = require("../models/patient.model");
+const Prescription = require("../models/prescription.model");
 
 class UserService {
   /**
-   * Get all users (Admin only)
+   * Get all users (associated with an admin)
    */
   async getAllUsers(query = {}) {
     const {
@@ -37,7 +35,8 @@ class UserService {
     const users = await User.find(filter)
       .sort(sort)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .select("-password -refreshToken");
 
     return {
       users,
@@ -62,74 +61,23 @@ class UserService {
   }
 
   /**
-   * Update user profile (own data)
+   * Update user profile
    */
   async updateProfile(userId, updateData) {
-    // Check if email already taken by another user
-    if (updateData.email) {
-      const existingUser = await User.findOne({
-        email: updateData.email,
-        _id: { $ne: userId },
-      });
-      if (existingUser) {
-        throw new ApiError(HTTP_STATUS.CONFLICT, "Email already in use");
-      }
-    }
+    // Prevent sensitive field updates
+    delete updateData.role;
+    delete updateData.subscriptionPlan;
+    delete updateData.createdBy;
 
     const user = await User.findByIdAndUpdate(
       userId,
       { $set: updateData },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!user) {
       throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
     }
-
-    return user;
-  }
-
-  /**
-   * Upload/Update avatar
-   */
-  async updateAvatar(userId, fileBuffer) {
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-    }
-
-    // Delete old avatar from Cloudinary if exists
-    if (user.avatar?.public_id) {
-      await deleteFromCloudinary(user.avatar.public_id);
-    }
-
-    // Upload new avatar
-    const result = await uploadToCloudinary(fileBuffer, "mern-boilerplate/avatars");
-
-    user.avatar = {
-      public_id: result.public_id,
-      url: result.url,
-    };
-    await user.save({ validateBeforeSave: false });
-
-    return user;
-  }
-
-  /**
-   * Remove avatar
-   */
-  async removeAvatar(userId) {
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-    }
-
-    if (user.avatar?.public_id) {
-      await deleteFromCloudinary(user.avatar.public_id);
-    }
-
-    user.avatar = { public_id: "", url: "" };
-    await user.save({ validateBeforeSave: false });
 
     return user;
   }
@@ -145,66 +93,34 @@ class UserService {
 
     const isPasswordValid = await user.comparePassword(currentPassword);
     if (!isPasswordValid) {
-      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Current password is incorrect");
+      throw new ApiError(
+        HTTP_STATUS.BAD_REQUEST,
+        "Current password is incorrect",
+      );
     }
 
     user.password = newPassword;
-    user.refreshToken = undefined; // Invalidate all sessions
+    user.refreshToken = undefined;
     await user.save();
 
     return user;
   }
 
   /**
-   * Update user role (Admin only)
+   * Get Doctor Personal Analytics
    */
-  async updateUserRole(userId, role) {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { role },
-      { new: true, runValidators: true }
-    );
+  async getDoctorAnalytics(doctorId) {
+    const [prescriptionsCount, patientsTreated] = await Promise.all([
+      Prescription.countDocuments({ doctorId }),
+      Prescription.distinct("patientId", { doctorId }).then(
+        (res) => res.length,
+      ),
+    ]);
 
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-    }
-
-    return user;
-  }
-
-  /**
-   * Soft delete user (deactivate)
-   */
-  async deactivateUser(userId) {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { isActive: false, refreshToken: undefined },
-      { new: true }
-    );
-
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-    }
-
-    return user;
-  }
-
-  /**
-   * Hard delete user (Admin only)
-   */
-  async deleteUser(userId) {
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-    }
-
-    // Delete avatar from Cloudinary
-    if (user.avatar?.public_id) {
-      await deleteFromCloudinary(user.avatar.public_id);
-    }
-
-    await User.findByIdAndDelete(userId);
-    return { message: "User permanently deleted" };
+    return {
+      totalPrescriptions: prescriptionsCount,
+      totalPatientsTreated: patientsTreated,
+    };
   }
 }
 

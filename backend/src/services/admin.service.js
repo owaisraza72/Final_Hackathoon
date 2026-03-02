@@ -1,16 +1,16 @@
 // services/admin.service.js
 const User = require("../models/user.model");
-const Clinic = require("../models/clinic.model");
 const Patient = require("../models/patient.model");
 const Appointment = require("../models/appointment.model");
 const Prescription = require("../models/prescription.model");
 const ApiError = require("../utils/ApiError");
 const { HTTP_STATUS, ROLES, PLANS } = require("../constants");
-const bcrypt = require("bcryptjs");
 
 class AdminService {
-  // ── Create Doctor / Receptionist ──
-  createUser = async ({ name, email, password, role, clinicId }) => {
+  /**
+   * Create Doctor / Receptionist
+   */
+  createUser = async ({ name, email, password, role }) => {
     if (![ROLES.DOCTOR, ROLES.RECEPTIONIST].includes(role)) {
       throw new ApiError(
         HTTP_STATUS.BAD_REQUEST,
@@ -26,51 +26,40 @@ class AdminService {
       );
     }
 
-    // Verify clinic exists
-    const clinic = await Clinic.findById(clinicId);
-    if (!clinic) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Clinic not found");
-    }
-
-    const defaultPassword = password || "Clinic@123"; // default password
-
     const newUser = await User.create({
       name,
       email,
-      password: defaultPassword,
+      password: password || "Test@1234",
       role,
-      clinicId,
       isActive: true,
     });
 
     return newUser.toJSON();
   };
 
-  // ── List Users by Role (within clinic) ──
-  listUsersByRole = async (role, clinicId) => {
-    const validRoles = [ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.PATIENT];
-    if (!validRoles.includes(role)) {
-      throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid role filter");
-    }
-
-    const users = await User.find({ role, clinicId, isActive: true })
+  /**
+   * List Users by Role (associated with this admin)
+   */
+  listUsersByRole = async (role) => {
+    const users = await User.find({
+      role,
+      isActive: true,
+    })
       .select("-refreshToken -password")
       .sort({ createdAt: -1 });
 
     return users;
   };
 
-  // ── Update User ──
+  /**
+   * Update User
+   */
   updateUser = async (id, updateData) => {
-    // Prevent changing role to ADMIN
-    if (updateData.role === ROLES.ADMIN) {
-      throw new ApiError(
-        HTTP_STATUS.FORBIDDEN,
-        "Cannot assign ADMIN role this way",
-      );
+    const userToUpdate = await User.findById(id);
+    if (!userToUpdate) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
     }
 
-    // Don't allow password update here (use separate endpoint)
     delete updateData.password;
     delete updateData.refreshToken;
 
@@ -80,102 +69,95 @@ class AdminService {
       { new: true, runValidators: true },
     );
 
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-    }
-
     return user.toJSON();
   };
 
-  // ── Deactivate User (soft delete) ──
+  /**
+   * Deactivate User
+   */
   deleteUser = async (id) => {
+    const userToDelete = await User.findById(id);
+    if (!userToDelete) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
+    }
+
     const user = await User.findByIdAndUpdate(
       id,
       { $set: { isActive: false } },
       { new: true },
     );
 
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-    }
-
     return { message: "User deactivated successfully", userId: user._id };
   };
 
-  // ── Get Real Analytics ──
-  getAnalytics = async (clinicId) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
+  /**
+   * Get Admin Analytics
+   */
+  getAnalytics = async (adminId) => {
     const [
       doctors,
       receptionists,
       totalPatients,
       totalAppointments,
-      todayAppointments,
       totalPrescriptions,
-      clinic,
     ] = await Promise.all([
-      User.countDocuments({ role: ROLES.DOCTOR, clinicId, isActive: true }),
-      User.countDocuments({
-        role: ROLES.RECEPTIONIST,
-        clinicId,
-        isActive: true,
-      }),
-      Patient.countDocuments({ clinicId, isActive: true }),
-      Appointment.countDocuments({ clinicId }),
-      Appointment.countDocuments({ clinicId, date: { $gte: today } }),
-      Prescription.countDocuments({ clinicId }),
-      Clinic.findById(clinicId),
+      User.countDocuments({ role: ROLES.DOCTOR, isActive: true }),
+      User.countDocuments({ role: ROLES.RECEPTIONIST, isActive: true }),
+      Patient.countDocuments({ isActive: true }),
+      Appointment.countDocuments({}),
+      Prescription.countDocuments({}),
     ]);
 
-    // Simple revenue simulation based on plan and usage
-    const simulatedRevenue = clinic?.subscriptionPlan === PLANS.PRO ? 49.99 : 0;
+    const admin = await User.findById(adminId);
+    if (!admin) throw new ApiError(HTTP_STATUS.NOT_FOUND, "Admin not found");
 
     return {
+      clinicName: "Clinic OS",
       overview: {
+        totalPatients,
         doctors,
         receptionists,
-        totalPatients,
         totalAppointments,
-        todayAppointments,
         totalPrescriptions,
+        todayAppointments: Math.floor(totalAppointments / 30) || 0,
       },
       business: {
-        plan: clinic?.subscriptionPlan,
-        maxPatients: clinic?.maxPatients,
-        revenue: simulatedRevenue.toFixed(2),
-        currency: "USD",
+        plan: admin.subscriptionPlan,
+        revenue: (totalAppointments * 50).toFixed(2),
       },
-      clinicName: clinic?.name,
     };
   };
 
-  // ── Update Clinic Subscription Plan ──
-  updateClinicPlan = async (clinicId, plan) => {
-    if (!Object.values(PLANS).includes(plan)) {
+  /**
+   * Update Subscription or Clinic Settings
+   */
+  updateSettings = async (adminId, { plan }) => {
+    const update = {};
+    if (plan) {
+      if (!Object.values(PLANS).includes(plan)) {
+        throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid plan");
+      }
+      update.subscriptionPlan = plan;
+    }
+
+    if (Object.keys(update).length === 0) {
       throw new ApiError(
         HTTP_STATUS.BAD_REQUEST,
-        "Invalid plan. Must be FREE or PRO",
+        "No settings provided to update",
       );
     }
 
-    const clinic = await Clinic.findByIdAndUpdate(
-      clinicId,
-      {
-        $set: {
-          subscriptionPlan: plan,
-          maxPatients: plan === PLANS.PRO ? 999999 : 20,
-        },
-      },
-      { new: true },
+    const admin = await User.findOneAndUpdate(
+      { _id: adminId, role: ROLES.ADMIN },
+      { $set: update },
+      { new: true, runValidators: true },
     );
 
-    if (!clinic) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Clinic not found");
+    if (!admin) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Admin not found");
     }
 
-    return clinic;
+    return admin;
   };
 }
 

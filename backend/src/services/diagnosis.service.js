@@ -8,28 +8,27 @@ class DiagnosisService {
   /**
    * Create a new diagnosis log record
    */
-  createDiagnosisLog = async (data, doctorId, clinicId) => {
+  createDiagnosisLog = async (data, doctorId) => {
     const { patientId, symptoms, additionalNotes, riskLevel, doctorNotes } =
       data;
 
-    // Verify patient exists and belongs to the clinical context
-    const patientExists = await Patient.findOne({ _id: patientId, clinicId });
+    // Verify patient exists
+    const patientExists = await Patient.findOne({
+      _id: patientId,
+      isActive: true,
+    });
     if (!patientExists) {
-      throw new ApiError(
-        HTTP_STATUS.NOT_FOUND,
-        "Patient not found in this clinic",
-      );
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Patient not found");
     }
 
     const diagnosisRecord = await DiagnosisLog.create({
       patientId,
       doctorId,
-      clinicId,
       symptoms,
       additionalNotes: additionalNotes || "",
       doctorNotes: doctorNotes || "",
       riskLevel: riskLevel || "low",
-      isAiFallback: false, // Not an AI generated record yet
+      isAiFallback: false,
     });
 
     return diagnosisRecord;
@@ -38,8 +37,8 @@ class DiagnosisService {
   /**
    * Get all diagnosis logs for a patient
    */
-  getPatientDiagnoses = async (patientId, clinicId) => {
-    const logs = await DiagnosisLog.find({ patientId, clinicId })
+  getPatientDiagnoses = async (patientId) => {
+    const logs = await DiagnosisLog.find({ patientId })
       .populate("doctorId", "name email")
       .sort({ createdAt: -1 });
 
@@ -49,8 +48,8 @@ class DiagnosisService {
   /**
    * Get single diagnosis log by id
    */
-  getDiagnosisById = async (id, clinicId) => {
-    const log = await DiagnosisLog.findOne({ _id: id, clinicId })
+  getDiagnosisById = async (id) => {
+    const log = await DiagnosisLog.findById(id)
       .populate("patientId", "name age gender")
       .populate("doctorId", "name email");
 

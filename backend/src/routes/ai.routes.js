@@ -1,4 +1,10 @@
-// routes/ai.routes.js
+/**
+ * Base URL: /api/v1/ai
+ *
+ * POST /diagnosis              - Generate AI diagnosis (Doctors only, PRO plan)
+ * GET  /explain/:prescriptionId - Generate AI explanation for prescription (PRO plan)
+ */
+
 const { Router } = require("express");
 const aiController = require("../controllers/ai.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
@@ -13,15 +19,22 @@ const router = Router();
 // All AI routes require authentication and PRO subscription!
 router.use(authenticate, requirePro);
 
-// ── POST /diagnose — AI analysis with Zod validation ──
+// ── AI Methods ──
+
+// @route   POST /api/v1/ai/diagnosis
+// @desc    Analyze symptoms using AI
+// @access  DOCTOR, ADMIN
+// @body    { "patientId": "ID", "symptoms": ["fever", "cough"], "notes": "Context" }
 router.post(
-  "/diagnose",
+  "/diagnosis",
   authorize(ROLES.DOCTOR, ROLES.ADMIN),
   validate(aiDiagnoseSchema),
   aiController.diagnose,
 );
 
-// ── GET /explain/:prescriptionId — AI explanation for patient (Patient + Doctor, PRO plan) ──
+// @route   GET /api/v1/ai/explain/:prescriptionId
+// @desc    Get AI explained summary of a prescription
+// @access  PATIENT, DOCTOR, ADMIN
 router.get(
   "/explain/:prescriptionId",
   authorize(ROLES.PATIENT, ROLES.DOCTOR, ROLES.ADMIN),

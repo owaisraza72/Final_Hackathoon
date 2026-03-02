@@ -2,14 +2,15 @@
 const Prescription = require("../models/prescription.model");
 const Patient = require("../models/patient.model");
 const ApiError = require("../utils/ApiError");
-const { HTTP_STATUS } = require("../constants");
-const PDFDocument = require("pdfkit"); // Will be installed in final phase
+const { HTTP_STATUS, PLANS } = require("../constants");
+const PDFDocument = require("pdfkit");
+const aiService = require("./ai.service");
 
 class PrescriptionService {
   /**
    * Create a new prescription
    */
-  createPrescription = async (data, doctorId, clinicId) => {
+  createPrescription = async (data, doctorId, subscriptionPlan) => {
     const {
       patientId,
       appointmentId,
@@ -19,25 +20,44 @@ class PrescriptionService {
       followUpDate,
     } = data;
 
-    // Verify patient exists and belongs to the same clinic
-    const patientExists = await Patient.findOne({ _id: patientId, clinicId });
+    // Verify patient exists
+    const patientExists = await Patient.findOne({
+      _id: patientId,
+      isActive: true,
+    });
     if (!patientExists) {
-      throw new ApiError(
-        HTTP_STATUS.NOT_FOUND,
-        "Patient not found in this clinic",
-      );
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Patient not found");
     }
 
     const prescription = await Prescription.create({
       patientId,
       doctorId,
       appointmentId,
-      clinicId,
       diagnosis,
       medicines,
       instructions,
       followUpDate,
     });
+
+    // Generate AI explanation asynchronously if Admin is PRO
+    if (subscriptionPlan === PLANS.PRO) {
+      aiService
+        .explainPrescription({
+          diagnosis,
+          medicines,
+          instructions,
+        })
+        .then((aiExplanation) => {
+          Prescription.findByIdAndUpdate(prescription._id, {
+            $set: { aiExplanation: aiExplanation?.explanation || null },
+          }).catch((err) =>
+            console.error("Failed to update AI explanation:", err.message),
+          );
+        })
+        .catch((err) =>
+          console.error("AI explanation generation failed:", err.message),
+        );
+    }
 
     return prescription;
   };
@@ -45,8 +65,8 @@ class PrescriptionService {
   /**
    * Get all prescriptions for a patient
    */
-  getPatientPrescriptions = async (patientId, clinicId) => {
-    const prescriptions = await Prescription.find({ patientId, clinicId })
+  getPatientPrescriptions = async (patientId) => {
+    const prescriptions = await Prescription.find({ patientId })
       .populate("doctorId", "name email")
       .sort({ createdAt: -1 });
 
@@ -56,8 +76,31 @@ class PrescriptionService {
   /**
    * Get single prescription by ID
    */
-  getPrescriptionById = async (id, clinicId) => {
-    const prescription = await Prescription.findOne({ _id: id, clinicId })
+  getPrescriptionById = async (id) => {
+    const prescription = await Prescription.findById(id)
+      .populate("patientId", "name age gender contact")
+      .populate("doctorId", "name email");
+
+    if (!prescription) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Prescription not found");
+    }
+
+    return prescription;
+  };
+
+  /**
+   * Update a prescription (Doctor only)
+   */
+  updatePrescription = async (id, updateData) => {
+    // Prevent updating protected fields
+    delete updateData.patientId;
+    delete updateData.doctorId;
+
+    const prescription = await Prescription.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true },
+    )
       .populate("patientId", "name age gender contact")
       .populate("doctorId", "name email");
 
@@ -71,11 +114,9 @@ class PrescriptionService {
   /**
    * Generate PDF buffer for printing/download
    */
-  generatePdfBuffer = async (prescriptionId, clinicId) => {
-    const prescription = await this.getPrescriptionById(
-      prescriptionId,
-      clinicId,
-    );
+  generatePdfBuffer = async (prescriptionId) => {
+    const prescription = await this.getPrescriptionById(prescriptionId);
+    const clinicHeader = "ClinicOS Digital Prescription";
 
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ margin: 50 });
@@ -85,58 +126,134 @@ class PrescriptionService {
       doc.on("end", () => resolve(Buffer.concat(buffers)));
       doc.on("error", (err) => reject(err));
 
-      // 🏢 Clinic Info Header
+      // 🏢 Header
       doc
-        .fontSize(20)
-        .text("ClinicOS Medical Report", { align: "center", underline: true });
-      doc.moveDown();
+        .fontSize(22)
+        .fillColor("#0f172a") // slate-900
+        .text(clinicHeader, {
+          align: "center",
+          bold: true,
+        });
 
-      // 🏥 Prescription Details
-      doc.fontSize(12);
-      doc.text(
-        `Prescription Date: ${new Date(prescription.createdAt).toLocaleDateString()}`,
+      doc.fontSize(10).fillColor("#64748b").text("Healthcare Excellence Node", {
+        align: "center",
+      });
+
+      doc.moveDown(2);
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor("#e2e8f0").stroke();
+      doc.moveDown(2);
+
+      // 🏥 Details Row
+      const dateStr = new Date(prescription.createdAt).toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        },
       );
+
+      doc
+        .fontSize(10)
+        .fillColor("#1e293b")
+        .text(`DATE: ${dateStr.toUpperCase()}`, { align: "right" });
+      doc.moveDown();
+
+      doc
+        .fontSize(12)
+        .fillColor("#0f172a")
+        .text("PATIENT INFORMATION", { bold: true });
+      doc
+        .fontSize(11)
+        .fillColor("#334155")
+        .text(`Name: ${prescription.patientId.name}`);
       doc.text(
-        `Patient: ${prescription.patientId.name} (${prescription.patientId.age}y / ${prescription.patientId.gender})`,
+        `Details: ${prescription.patientId.age} years / ${prescription.patientId.gender.toUpperCase()}`,
       );
-      doc.text(`Doctor: Dr. ${prescription.doctorId.name}`);
+      doc.text(`Contact: ${prescription.patientId.contact}`);
       doc.moveDown();
 
-      doc.fontSize(14).text("Diagnosis:", { underline: true });
-      doc.fontSize(11).text(prescription.diagnosis);
-      doc.moveDown();
+      doc
+        .fontSize(12)
+        .fillColor("#0f172a")
+        .text("MEDICAL PRACTITIONER", { bold: true });
+      doc
+        .fontSize(11)
+        .fillColor("#334155")
+        .text(`Dr. ${prescription.doctorId.name}`);
+      doc.text(
+        `Medical Node ID: ${prescription.doctorId._id.toString().slice(-8).toUpperCase()}`,
+      );
+      doc.moveDown(2);
 
-      // 💊 Medicines Table Header
-      doc.fontSize(14).text("Medicines:", { underline: true });
-      doc.moveDown(0.5);
+      // Diagnosis Section
+      doc
+        .rect(50, doc.y, 500, 40)
+        .fill("#f8fafc")
+        .strokeColor("#e2e8f0")
+        .stroke();
+      doc.y += 10;
+      doc.fontSize(14).fillColor("#0f172a").text(" DIAGNOSIS", { bold: true });
+      doc.fontSize(11).fillColor("#475569").text(` ${prescription.diagnosis}`);
+      doc.moveDown(2.5);
+
+      // 💊 Medicines
+      doc
+        .fontSize(14)
+        .fillColor("#0f172a")
+        .text("PRESCRIPTION ORDERS / RX", { bold: true });
+      doc.moveDown(1);
 
       prescription.medicines.forEach((med, idx) => {
-        doc.fontSize(11).text(`${idx + 1}. ${med.name} - ${med.dosage}`);
         doc
-          .fontSize(9)
-          .text(`   Frequency: ${med.frequency} | Duration: ${med.duration}`, {
-            color: "grey",
+          .fontSize(11)
+          .fillColor("#0f172a")
+          .text(`${idx + 1}. ${med.name.toUpperCase()} (${med.dosage})`, {
+            bold: true,
           });
+        doc
+          .fontSize(10)
+          .fillColor("#64748b")
+          .text(`   Frequency: ${med.frequency} | Duration: ${med.duration}`);
         if (med.instructions) {
-          doc.fontSize(9).text(`   (Note: ${med.instructions})`);
+          doc
+            .fontSize(10)
+            .fillColor("#475569")
+            .text(`   Note: ${med.instructions}`, { oblique: true });
         }
         doc.moveDown(0.5);
       });
 
-      doc.moveDown();
+      doc.moveDown(1.5);
       if (prescription.instructions) {
-        doc.fontSize(14).text("Additional Instructions:", { underline: true });
-        doc.fontSize(11).text(prescription.instructions);
+        doc
+          .fontSize(14)
+          .fillColor("#0f172a")
+          .text("ADDITIONAL INSTRUCTIONS", { bold: true });
+        doc.fontSize(11).fillColor("#475569").text(prescription.instructions);
+        doc.moveDown(2);
       }
 
-      if (prescription.followUpDate) {
-        doc.moveDown();
+      // 🧠 AI Insight Layer (Premium PRO feature)
+      if (prescription.aiExplanation) {
+        doc
+          .rect(50, doc.y, 500, 100)
+          .fill("#f0fdf4")
+          .strokeColor("#bbf7d0")
+          .stroke();
+        doc.y += 10;
         doc
           .fontSize(12)
-          .text(
-            `Next Follow-up: ${new Date(prescription.followUpDate).toLocaleDateString()}`,
-            { oblique: true },
-          );
+          .fillColor("#15803d")
+          .text(" ✨ CLINIC-OS AI INSIGHTS (BETA)", { bold: true });
+        doc
+          .fontSize(10)
+          .fillColor("#166534")
+          .text(prescription.aiExplanation.slice(0, 400), {
+            width: 480,
+            align: "justify",
+          });
+        doc.moveDown();
       }
 
       doc.end();

@@ -11,7 +11,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result?.error?.status === 401) {
     const refreshResult = await baseQuery(
-      { url: "/auth/refresh-token", method: "POST" },
+      { url: "auth/refresh-token", method: "POST" },
       api,
       extraOptions,
     );
@@ -30,13 +30,13 @@ export const adminApi = createApi({
   tagTypes: ["User", "Analytics"],
   endpoints: (builder) => ({
     listUsers: builder.query({
-      query: (role) => `/admin/list/${role}`,
+      query: (role) => `admin/users/${role}`,
       providesTags: ["User"],
       transformResponse: (res) => res.data.users,
     }),
     createUser: builder.mutation({
       query: (data) => ({
-        url: "/admin/create",
+        url: "admin/users",
         method: "POST",
         body: data,
       }),
@@ -44,7 +44,7 @@ export const adminApi = createApi({
     }),
     updateUser: builder.mutation({
       query: ({ id, data }) => ({
-        url: `/admin/update/${id}`,
+        url: `admin/users/${id}`,
         method: "PATCH",
         body: data,
       }),
@@ -52,21 +52,21 @@ export const adminApi = createApi({
     }),
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/admin/delete/${id}`,
+        url: `admin/users/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["User", "Analytics"],
     }),
     getAnalytics: builder.query({
-      query: () => "/admin/analytics",
+      query: () => "admin/analytics",
       providesTags: ["Analytics"],
       transformResponse: (res) => res.data,
     }),
-    updateSubscription: builder.mutation({
-      query: (plan) => ({
-        url: "/admin/subscription",
+    updateSettings: builder.mutation({
+      query: (data) => ({
+        url: "admin/settings",
         method: "PATCH",
-        body: { plan },
+        body: data,
       }),
       invalidatesTags: ["Analytics", "User"],
     }),
@@ -79,5 +79,6 @@ export const {
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetAnalyticsQuery,
-  useUpdateSubscriptionMutation,
+  useUpdateSettingsMutation,
+  useUpdateSubscriptionMutation
 } = adminApi;

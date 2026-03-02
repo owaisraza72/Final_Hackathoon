@@ -8,12 +8,10 @@ class AppointmentController {
   // ── POST /api/v1/appointments ──
   bookAppointment = asyncHandler(async (req, res) => {
     const receptionistId = req.user._id;
-    const clinicId = req.user.clinicId;
 
     const appointment = await appointmentService.bookAppointment(
       req.body,
       receptionistId,
-      clinicId,
     );
 
     res
@@ -29,11 +27,10 @@ class AppointmentController {
 
   // ── GET /api/v1/appointments ──
   listAppointments = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { status, date } = req.query;
     const { role, _id: userId } = req.user;
 
-    const appointments = await appointmentService.getAppointments(clinicId, {
+    const appointments = await appointmentService.getAppointments({
       role,
       userId,
       status,
@@ -53,13 +50,9 @@ class AppointmentController {
 
   // ── GET /api/v1/appointments/schedule ──
   getDailySchedule = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { date } = req.query;
 
-    const appointments = await appointmentService.getDailySchedule(
-      clinicId,
-      date,
-    );
+    const appointments = await appointmentService.getDailySchedule(date);
 
     res
       .status(HTTP_STATUS.OK)
@@ -74,14 +67,12 @@ class AppointmentController {
 
   // ── PATCH /api/v1/appointments/:id/status ──
   updateStatus = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { id } = req.params;
     const { status } = req.body;
 
     const updatedAppointment = await appointmentService.updateStatus(
       id,
       status,
-      clinicId,
     );
 
     res
@@ -97,10 +88,9 @@ class AppointmentController {
 
   // ── DELETE /api/v1/appointments/:id ──
   cancelAppointment = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { id } = req.params;
 
-    const result = await appointmentService.cancelAppointment(id, clinicId);
+    const result = await appointmentService.cancelAppointment(id);
 
     res
       .status(HTTP_STATUS.OK)

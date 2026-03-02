@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const env = require("../config/env.config");
-const { ROLES } = require("../constants");
+const { ROLES, PLANS } = require("../constants");
 
 const userSchema = new mongoose.Schema(
   {
@@ -30,23 +30,18 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: {
-        values: Object.values(ROLES),
-        message: "{VALUE} is not a valid role",
-      },
-      default: ROLES.USER,
+      enum: Object.values(ROLES),
+      default: ROLES.PATIENT,
     },
-    avatar: {
-      public_id: { type: String, default: "" },
-      url: { type: String, default: "" },
+    subscriptionPlan: {
+      type: String,
+      enum: Object.values(PLANS),
+      default: PLANS.FREE,
+      // Only meaningful for ADMIN
     },
     refreshToken: {
       type: String,
       select: false,
-    },
-    clinicId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
     },
     isActive: {
       type: Boolean,
@@ -74,14 +69,12 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-// ── Hash password before save (Mongoose 8+ style — no next()) ──
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// ── Instance Methods ──
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };

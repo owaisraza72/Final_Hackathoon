@@ -7,13 +7,11 @@ const patientService = require("../services/patient.service");
 class PatientController {
   // ── POST /api/v1/patients ──
   registerPatient = asyncHandler(async (req, res) => {
-    const createdBy = req.user._id;
-    const clinicId = req.user.clinicId;
+    const registeredBy = req.user._id;
 
     const patient = await patientService.registerPatient(
       req.body,
-      createdBy,
-      clinicId,
+      registeredBy,
     );
 
     res
@@ -29,10 +27,9 @@ class PatientController {
 
   // ── GET /api/v1/patients ──
   listPatients = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { search, page, limit } = req.query;
 
-    const result = await patientService.listPatients(clinicId, {
+    const result = await patientService.listPatients({
       search,
       page,
       limit,
@@ -51,10 +48,9 @@ class PatientController {
 
   // ── GET /api/v1/patients/:id ──
   getPatient = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { id } = req.params;
 
-    const patient = await patientService.getPatientById(id, clinicId);
+    const patient = await patientService.getPatientById(id);
 
     res
       .status(HTTP_STATUS.OK)
@@ -69,10 +65,9 @@ class PatientController {
 
   // ── PATCH /api/v1/patients/:id ──
   updatePatient = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { id } = req.params;
 
-    const patient = await patientService.updatePatient(id, req.body, clinicId);
+    const patient = await patientService.updatePatient(id, req.body);
 
     res
       .status(HTTP_STATUS.OK)
@@ -87,10 +82,9 @@ class PatientController {
 
   // ── GET /api/v1/patients/:id/history ──
   getPatientHistory = asyncHandler(async (req, res) => {
-    const clinicId = req.user.clinicId;
     const { id } = req.params;
 
-    const history = await patientService.getPatientHistory(id, clinicId);
+    const history = await patientService.getPatientHistory(id);
 
     res
       .status(HTTP_STATUS.OK)
@@ -99,6 +93,23 @@ class PatientController {
           HTTP_STATUS.OK,
           history,
           "Patient history fetched successfully",
+        ),
+      );
+  });
+
+  // ── DELETE /api/v1/patients/:id ──
+  deletePatient = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const patient = await patientService.deletePatient(id);
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(
+        new ApiResponse(
+          HTTP_STATUS.OK,
+          { patient },
+          "Patient deleted successfully",
         ),
       );
   });

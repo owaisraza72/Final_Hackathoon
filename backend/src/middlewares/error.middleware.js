@@ -18,17 +18,17 @@ const errorHandler = (err, req, res, _next) => {
     }
     // Mongoose Duplicate Key (11000)
     else if (err.code === 11000) {
-      const field = Object.keys(err.keyValue)[0];
+      const field = err.keyValue ? Object.keys(err.keyValue)[0] : "Key";
       error = new ApiError(
         HTTP_STATUS.CONFLICT,
-        `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`
+        `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`,
       );
     }
     // Mongoose Bad ObjectId
     else if (err.name === "CastError") {
       error = new ApiError(
         HTTP_STATUS.BAD_REQUEST,
-        `Invalid ${err.path}: ${err.value}`
+        `Invalid ${err.path}: ${err.value}`,
       );
     }
     // JWT Errors
@@ -41,13 +41,16 @@ const errorHandler = (err, req, res, _next) => {
     else {
       error = new ApiError(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        err.message || "Internal Server Error"
+        err.message || "Internal Server Error",
       );
     }
   }
 
+  // Always log the actual error for debugging
+  console.error(">>> API ERROR:", err);
+
   logger.error(
-    `${error.statusCode} - ${error.message} - ${req.method} ${req.originalUrl}`
+    `${error.statusCode} - ${error.message} - ${req.method} ${req.originalUrl}`,
   );
 
   res.status(error.statusCode).json({
@@ -61,7 +64,9 @@ const errorHandler = (err, req, res, _next) => {
 
 // ── 404 Handler ──
 const notFoundHandler = (req, _res, next) => {
-  next(new ApiError(HTTP_STATUS.NOT_FOUND, `Route not found: ${req.originalUrl}`));
+  next(
+    new ApiError(HTTP_STATUS.NOT_FOUND, `Route not found: ${req.originalUrl}`),
+  );
 };
 
 module.exports = { errorHandler, notFoundHandler };

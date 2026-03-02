@@ -1,38 +1,32 @@
-// middlewares/subscription.middleware.js
-const Clinic = require("../models/clinic.model");
+const User = require("../models/user.model");
 const Patient = require("../models/patient.model");
 const ApiError = require("../utils/ApiError");
-const { HTTP_STATUS, PLANS } = require("../constants");
+const { HTTP_STATUS, PLANS, ROLES } = require("../constants");
+
+const getClinicAdmin = async () => {
+  const admin = await User.findOne({ role: ROLES.ADMIN, isActive: true });
+  if (!admin) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Clinic Admin not found");
+  }
+  return admin;
+};
 
 /**
- * requirePro — blocks access if clinic is on FREE plan
+ * requirePro — blocks access if admin is on FREE plan
  * Use on routes that require PRO features (e.g., AI)
  */
 const requirePro = async (req, _res, next) => {
   try {
-    const clinicId = req.user?.clinicId;
-    if (!clinicId) {
-      throw new ApiError(
-        HTTP_STATUS.BAD_REQUEST,
-        "Clinic not associated with your account",
-      );
-    }
+    const admin = await getClinicAdmin();
 
-    const clinic = await Clinic.findById(clinicId);
-    if (!clinic) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Clinic not found");
-    }
-
-    if (clinic.subscriptionPlan !== PLANS.PRO) {
+    if (admin.subscriptionPlan !== PLANS.PRO) {
       throw new ApiError(
         HTTP_STATUS.FORBIDDEN,
-        "This feature requires a PRO subscription. Please upgrade your plan to access AI features and advanced analytics.",
-        [{ field: "plan", message: "Upgrade to PRO required" }],
+        "This feature requires a PRO subscription. Please upgrade to access AI insights.",
       );
     }
 
-    // Attach clinic to request for downstream use
-    req.clinic = clinic;
+    req.admin = admin;
     next();
   } catch (err) {
     next(err);
@@ -40,25 +34,13 @@ const requirePro = async (req, _res, next) => {
 };
 
 /**
- * attachClinic — attaches clinic to req.clinic (no plan restriction)
- * Use on routes that just need clinic info
+ * attachAdmin — attaches admin to req.admin (no plan restriction)
+ * Use on routes that just need admin/environment info
  */
-const attachClinic = async (req, _res, next) => {
+const attachAdmin = async (req, _res, next) => {
   try {
-    const clinicId = req.user?.clinicId;
-    if (!clinicId) {
-      throw new ApiError(
-        HTTP_STATUS.BAD_REQUEST,
-        "Clinic not associated with your account",
-      );
-    }
-
-    const clinic = await Clinic.findById(clinicId);
-    if (!clinic) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Clinic not found");
-    }
-
-    req.clinic = clinic;
+    const admin = await getClinicAdmin();
+    req.admin = admin;
     next();
   } catch (err) {
     next(err);
@@ -66,54 +48,33 @@ const attachClinic = async (req, _res, next) => {
 };
 
 /**
- * checkPatientLimit — FREE plan max 20 patients
+ * checkPatientLimit — FREE plan max 10 patients (as per hackathon requirements)
  * Use before registerPatient route
  */
 const checkPatientLimit = async (req, _res, next) => {
   try {
-    const clinicId = req.user?.clinicId;
-    if (!clinicId) {
-      throw new ApiError(
-        HTTP_STATUS.BAD_REQUEST,
-        "Clinic not associated with your account",
-      );
-    }
+    const admin = await getClinicAdmin();
 
-    const clinic = await Clinic.findById(clinicId);
-    if (!clinic) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Clinic not found");
-    }
-
-    // PRO plan: no patient limit
-    if (clinic.subscriptionPlan === PLANS.PRO) {
-      req.clinic = clinic;
+    if (admin.subscriptionPlan === PLANS.PRO) {
+      req.admin = admin;
       return next();
     }
 
-    // FREE plan: count existing patients
-    const patientCount = await Patient.countDocuments({
-      clinicId,
-      isActive: true,
-    });
+    const LIMIT = 10;
+    const patientCount = await Patient.countDocuments({ isActive: true });
 
-    if (patientCount >= clinic.maxPatients) {
+    if (patientCount >= LIMIT) {
       throw new ApiError(
         HTTP_STATUS.FORBIDDEN,
-        `Patient limit reached (${clinic.maxPatients} max on FREE plan). Upgrade to PRO for unlimited patients.`,
-        [
-          {
-            field: "plan",
-            message: `Max ${clinic.maxPatients} patients allowed on FREE plan`,
-          },
-        ],
+        `Patient limit reached (max ${LIMIT} on FREE plan). Upgrade to PRO for unlimited patients.`,
       );
     }
 
-    req.clinic = clinic;
+    req.admin = admin;
     next();
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { requirePro, attachClinic, checkPatientLimit };
+module.exports = { requirePro, attachAdmin, checkPatientLimit };

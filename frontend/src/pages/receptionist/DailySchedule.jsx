@@ -29,100 +29,116 @@ const DailySchedule = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in">
-      <PageHeader
-        title="Daily Schedule"
-        description="View and manage the clinic's master schedule."
-        action={
-          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
-            <Calendar className="h-5 w-5 text-indigo-500" />
+    <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
+        <PageHeader
+          title="Clinical Chronology"
+          description="Synchronized master schedule for active clinical encounters."
+        />
+        <div className="flex items-center gap-4 h-14 px-6 bg-white border border-slate-200 rounded-[24px] shadow-sm">
+          <Calendar className="h-5 w-5 text-indigo-500" />
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">
+              Active Cycle Date
+            </span>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="font-medium text-slate-700 outline-none"
+              className="text-xs font-black text-slate-700 outline-none bg-transparent cursor-pointer"
             />
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {isLoading ? (
-        <div className="flex justify-center p-12">
-          <LoadingSpinner />
+        <div className="flex h-[40vh] justify-center items-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-12 w-12 border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin" />
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+              Compiling Daily Matrix...
+            </p>
+          </div>
         </div>
       ) : appointments?.length === 0 ? (
-        <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 shadow-sm">
-          <Calendar className="h-16 w-16 mx-auto text-slate-300 mb-4" />
-          <h3 className="text-xl font-bold text-slate-700">No appointments</h3>
-          <p className="text-slate-500 mt-2">
-            There are no appointments scheduled for{" "}
-            {new Date(selectedDate).toLocaleDateString()}.
+        <div className="bg-white p-20 text-center rounded-[40px] border border-slate-200/60 premium-shadow">
+          <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Calendar className="h-10 w-10 text-slate-200" />
+          </div>
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
+            Zero Encounters Active
+          </h3>
+          <p className="text-slate-400 mt-2 text-sm font-semibold max-w-sm mx-auto leading-relaxed">
+            There are no clinical sessions synchronized for the selected
+            temporal marker.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {appointments?.map((app) => (
             <div
               key={app._id}
-              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden group"
+              className="group bg-white rounded-[40px] border border-slate-200/50 premium-shadow overflow-hidden flex flex-col hover:scale-[1.02] transition-all duration-500"
             >
-              {/* Status Indicator Band */}
-              <div
-                className={`absolute top-0 left-0 w-1 h-full ${
-                  app.status === "completed"
-                    ? "bg-emerald-500"
-                    : app.status === "pending"
-                      ? "bg-amber-500"
-                      : app.status === "no_show"
-                        ? "bg-red-500"
-                        : "bg-slate-300"
-                }`}
-              />
-
-              <div className="flex justify-between items-start mb-4 pl-3">
-                <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg font-bold text-sm">
-                  <Clock className="h-4 w-4" /> {app.timeSlot}
+              <div className="p-8 space-y-6 flex-1">
+                <div className="flex justify-between items-start">
+                  <div className="h-14 w-12 bg-slate-50 rounded-2xl flex flex-col items-center justify-center border border-slate-100 group-hover:bg-indigo-50 transition-colors">
+                    <Clock className="h-4 w-4 text-indigo-500" />
+                    <span className="text-[9px] font-black text-slate-700 mt-1">
+                      {app.timeSlot}
+                    </span>
+                  </div>
+                  <div
+                    className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${
+                      app.status === "completed"
+                        ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                        : app.status === "pending"
+                          ? "bg-amber-50 text-amber-600 border-amber-100"
+                          : "bg-red-50 text-red-600 border-red-100"
+                    }`}
+                  >
+                    {app.status}
+                  </div>
                 </div>
-                <span
-                  className={`px-2 py-1 text-[10px] uppercase font-bold rounded-full tracking-wider ${
-                    app.status === "completed"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : app.status === "pending"
-                        ? "bg-amber-100 text-amber-700"
-                        : app.status === "no_show"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  {app.status}
-                </span>
-              </div>
 
-              <div className="pl-3 flex-1">
-                <h4 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                  <User className="h-4 w-4 text-slate-400" />{" "}
-                  {app.patientId?.name || "Unknown"}
-                </h4>
-                <p className="text-sm text-slate-500 font-medium ml-6 mb-3 border-b border-slate-100 pb-3">
-                  Dr. {app.doctorId?.name || "Unassigned"}
-                </p>
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <User className="h-4 w-4 text-slate-300" />
+                    <h4 className="text-xl font-black text-slate-800 tracking-tight">
+                      {app.patientId?.name || "Protocol Unknown"}
+                    </h4>
+                  </div>
+                  <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest ml-7">
+                    Assigned: Dr. {app.doctorId?.name || "Pending Selection"}
+                  </p>
+                </div>
 
                 {app.reason && (
-                  <p className="text-sm text-slate-600 italic bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    "{app.reason}"
-                  </p>
+                  <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 group-hover:bg-white transition-colors duration-500">
+                    <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1 font-black">
+                      Chief Complaint
+                    </p>
+                    <p className="text-xs font-bold text-slate-600 leading-relaxed italic">
+                      "{app.reason}"
+                    </p>
+                  </div>
                 )}
               </div>
 
-              <div className="pl-3 mt-4 pt-4 border-t border-slate-100 flex justify-end">
+              <div className="p-4 bg-slate-50/50 border-t border-slate-50 flex justify-between items-center px-8">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    ID: {app._id.slice(-6).toUpperCase()}
+                  </span>
+                </div>
                 {app.status === "pending" && (
                   <button
                     onClick={() => handleCancelClick(app._id)}
                     disabled={isCanceling}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Cancel Appointment"
+                    className="h-10 w-10 bg-white hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-xl border border-slate-200 hover:border-red-100 shadow-sm transition-all flex items-center justify-center group/trash"
                   >
-                    <Trash2 className="h-5 w-5" />
+                    <Trash2 className="h-4 w-4 group-hover/trash:scale-125 transition-transform" />
                   </button>
                 )}
               </div>

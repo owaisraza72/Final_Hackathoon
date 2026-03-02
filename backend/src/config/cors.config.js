@@ -2,14 +2,18 @@ const env = require("./env.config");
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (env.NODE_ENV === "development") {
-      return callback(null, true);
-    }
-    // Parse multiple URLs from CLIENT_URL (comma-separated)
-    const allowedOrigins = env.CLIENT_URL.split(",").map((url) => url.trim());
+    // Allow requests without origin (Postman, mobile apps)
+    if (!origin) return callback(null, true);
 
-    // Allow requests with no origin (mobile apps, Postman, curl)
-    if (!origin || allowedOrigins.includes(origin)) {
+    const allowedOrigins = env.CLIENT_URL
+      ? env.CLIENT_URL.split(",").map((url) => url.trim())
+      : [];
+
+    if (env.NODE_ENV === "development") {
+      allowedOrigins.push("http://localhost:5173");
+    }
+
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -18,7 +22,7 @@ const corsOptions = {
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  maxAge: 86400, // 24 hours preflight cache
+  maxAge: 86400,
 };
 
 module.exports = corsOptions;

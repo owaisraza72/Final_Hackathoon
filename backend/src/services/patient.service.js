@@ -3,33 +3,35 @@ const Patient = require("../models/patient.model");
 const Appointment = require("../models/appointment.model");
 const Prescription = require("../models/prescription.model");
 const DiagnosisLog = require("../models/diagnosisLog.model");
+const User = require("../models/user.model");
 const ApiError = require("../utils/ApiError");
 const { HTTP_STATUS } = require("../constants");
 
 class PatientService {
   // ── Register new patient ──
-  registerPatient = async (data, createdBy, clinicId) => {
+  registerPatient = async (data, registeredBy) => {
     const {
       name,
       age,
       gender,
       contact,
+      email,
       address,
       bloodGroup,
       allergies,
       emergencyContact,
     } = data;
 
-    // Check duplicate contact within clinic
+    // Check duplicate contact
     const existing = await Patient.findOne({
       contact,
-      clinicId,
       isActive: true,
     });
+
     if (existing) {
       throw new ApiError(
         HTTP_STATUS.CONFLICT,
-        `A patient with contact '${contact}' already exists in this clinic`,
+        `A patient with contact '${contact}' already exists`,
       );
     }
 
@@ -38,22 +40,21 @@ class PatientService {
       age,
       gender,
       contact,
-      address: address || "",
+      email: email || undefined,
+      address: address || undefined,
       bloodGroup: bloodGroup || "unknown",
       allergies: allergies || [],
       emergencyContact: emergencyContact || {},
-      createdBy,
-      clinicId,
+      createdBy: registeredBy,
     });
 
     return patient;
   };
 
   // ── Get single patient by ID ──
-  getPatientById = async (patientId, clinicId) => {
+  getPatientById = async (patientId) => {
     const patient = await Patient.findOne({
       _id: patientId,
-      clinicId,
       isActive: true,
     }).populate("createdBy", "name email role");
 
@@ -65,13 +66,11 @@ class PatientService {
   };
 
   // ── Update patient info ──
-  updatePatient = async (patientId, updateData, clinicId) => {
-    // Protect sensitive fields
+  updatePatient = async (patientId, updateData) => {
     delete updateData.createdBy;
-    delete updateData.clinicId;
 
     const patient = await Patient.findOneAndUpdate(
-      { _id: patientId, clinicId, isActive: true },
+      { _id: patientId, isActive: true },
       { $set: updateData },
       { new: true, runValidators: true },
     );
@@ -84,11 +83,8 @@ class PatientService {
   };
 
   // ── List patients with search & pagination ──
-  listPatients = async (
-    clinicId,
-    { search = "", page = 1, limit = 20 } = {},
-  ) => {
-    const query = { clinicId, isActive: true };
+  listPatients = async ({ search = "", page = 1, limit = 20 } = {}) => {
+    const query = { isActive: true };
 
     if (search) {
       query.$or = [
@@ -97,14 +93,16 @@ class PatientService {
       ];
     }
 
-    const skip = (page - 1) * limit;
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.max(1, Number(limit) || 20);
+    const skip = (pageNum - 1) * limitNum;
 
     const [patients, total] = await Promise.all([
       Patient.find(query)
-        .select("name age gender contact bloodGroup createdAt")
+        .select("name age gender contact bloodGroup createdAt isActive")
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(Number(limit)),
+        .limit(limitNum),
       Patient.countDocuments(query),
     ]);
 
@@ -112,18 +110,17 @@ class PatientService {
       patients,
       pagination: {
         total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / limit),
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
       },
     };
   };
 
   // ── Get full patient history (appointments + prescriptions + diagnoses) ──
-  getPatientHistory = async (patientId, clinicId) => {
+  getPatientHistory = async (patientId) => {
     const patient = await Patient.findOne({
       _id: patientId,
-      clinicId,
       isActive: true,
     });
     if (!patient) {
@@ -131,15 +128,15 @@ class PatientService {
     }
 
     const [appointments, prescriptions, diagnoses] = await Promise.all([
-      Appointment.find({ patientId, clinicId })
+      Appointment.find({ patientId })
         .populate("doctorId", "name email")
         .sort({ date: -1 })
         .limit(20),
-      Prescription.find({ patientId, clinicId })
+      Prescription.find({ patientId })
         .populate("doctorId", "name email")
         .sort({ createdAt: -1 })
         .limit(20),
-      DiagnosisLog.find({ patientId, clinicId })
+      DiagnosisLog.find({ patientId })
         .populate("doctorId", "name email")
         .sort({ createdAt: -1 })
         .limit(20),
@@ -151,6 +148,21 @@ class PatientService {
       prescriptions,
       diagnoses,
     };
+  };
+
+  // ── Soft delete patient ──
+  deletePatient = async (patientId) => {
+    const patient = await Patient.findOneAndUpdate(
+      { _id: patientId, isActive: true },
+      { $set: { isActive: false } },
+      { new: true },
+    );
+
+    if (!patient) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Patient not found");
+    }
+
+    return patient;
   };
 }
 
