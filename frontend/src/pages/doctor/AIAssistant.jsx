@@ -147,18 +147,39 @@ const AIAssistant = () => {
               />
             </div>
 
-            <button
-              onClick={handleAnalyze}
-              disabled={isLoading || !patientId || symptoms.length === 0}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:shadow-none"
-            >
-              {isLoading ? (
-                <Loader2 className="animate-spin h-5 w-5" />
-              ) : (
-                <BrainCircuit className="h-5 w-5" />
+            <div className="relative">
+              {isLoading && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl animate-in fade-in">
+                  <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
+                    <div className="space-y-1.5 text-center">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-indigo-900 border-b border-indigo-100 pb-1">
+                        AI Processing Matrix
+                      </p>
+                      <div className="flex flex-col text-[8px] font-bold text-slate-400 gap-1 mt-2">
+                        <p className="animate-pulse">
+                          1. INGESTING CLINICAL CONTEXT...
+                        </p>
+                        <p className="animate-pulse delay-75">
+                          2. PATTERN RECOGNITION ACTIVE...
+                        </p>
+                        <p className="animate-pulse delay-150">
+                          3. SYNTHESIZING RECOMMENDATIONS...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
-              {isLoading ? "Running Analysis..." : "Analyze with Gemini Engine"}
-            </button>
+              <button
+                onClick={handleAnalyze}
+                disabled={isLoading || !patientId || symptoms.length === 0}
+                className="w-full py-4 bg-slate-900 hover:bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-slate-900/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50 disabled:grayscale"
+              >
+                <BrainCircuit className="h-4 w-4" />
+                Initiate Analytical Sequence
+              </button>
+            </div>
           </div>
         </div>
 

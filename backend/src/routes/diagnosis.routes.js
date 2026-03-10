@@ -52,4 +52,22 @@ router.post(
   diagnosisController.createDiagnosis,
 );
 
+// ── Update Record ──
+// @route   PATCH /api/v1/diagnoses/:id
+// @desc    Modify an existing diagnosis log
+router.patch(
+  "/:id",
+  authorize(ROLES.DOCTOR, ROLES.ADMIN),
+  diagnosisController.updateDiagnosis,
+);
+
+// ── Wipe Record ──
+// @route   DELETE /api/v1/diagnoses/:id
+// @desc    Physically remove a diagnosis entry
+router.delete(
+  "/:id",
+  authorize(ROLES.DOCTOR, ROLES.ADMIN),
+  diagnosisController.deleteDiagnosis,
+);
+
 module.exports = router;

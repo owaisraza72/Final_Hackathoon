@@ -1,8 +1,8 @@
 const { z } = require("zod");
 
 // ── Register Patient Schema ──
-// FIXED: Removed password field. Patients are data-only records, not auth users.
-// Patient authentication can be handled separately if needed.
+// Creates both a Patient medical record AND a User auth account (if email provided)
+// so the patient can later login to their portal.
 const registerPatientSchema = z.object({
   name: z
     .string({ required_error: "Name is required" })
@@ -19,6 +19,10 @@ const registerPatientSchema = z.object({
     .string({ required_error: "Contact number is required" })
     .regex(/^[0-9+\-\s]{7,20}$/, "Please provide a valid contact number"),
   email: z.string().email("Invalid email format").optional(),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .optional(),
   address: z.string().optional(),
   bloodGroup: z
     .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"])

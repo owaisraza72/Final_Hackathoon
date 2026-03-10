@@ -4,6 +4,7 @@ const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 const { HTTP_STATUS } = require("../constants");
 const prescriptionService = require("../services/prescription.service");
+const Patient = require("../models/patient.model");
 
 class PrescriptionController {
   // ── POST /api/v1/prescriptions ──
@@ -30,7 +31,23 @@ class PrescriptionController {
 
   // ── GET /api/v1/prescriptions/patient/:id ──
   getPatientPrescriptions = asyncHandler(async (req, res) => {
-    const patientId = req.params.id;
+    let patientId = req.params.id;
+
+    // Handle "me" alias for logged-in patients
+    if (patientId === "me") {
+      patientId = req.user._id;
+
+      // PROACTIVE SYNC: Link by email if not already linked
+      const existingPatient = await Patient.findOne({
+        email: req.user.email,
+        isActive: true,
+      });
+
+      if (existingPatient && !existingPatient.userId) {
+        existingPatient.userId = req.user._id;
+        await existingPatient.save({ validateBeforeSave: false });
+      }
+    }
 
     const prescriptions =
       await prescriptionService.getPatientPrescriptions(patientId);
@@ -42,6 +59,24 @@ class PrescriptionController {
           HTTP_STATUS.OK,
           { prescriptions },
           "Prescriptions fetched successfully",
+        ),
+      );
+  });
+
+  // ── GET /api/v1/prescriptions/doctor ──
+  getDoctorPrescriptions = asyncHandler(async (req, res) => {
+    const doctorId = req.user._id;
+
+    const prescriptions =
+      await prescriptionService.getDoctorPrescriptions(doctorId);
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(
+        new ApiResponse(
+          HTTP_STATUS.OK,
+          { prescriptions },
+          "Doctor's prescriptions fetched successfully",
         ),
       );
   });
@@ -98,6 +133,17 @@ class PrescriptionController {
           "Prescription updated successfully",
         ),
       );
+  });
+
+  // ── DELETE /api/v1/prescriptions/:id ──
+  deletePrescription = asyncHandler(async (req, res) => {
+    const prescriptionId = req.params.id;
+
+    await prescriptionService.deletePrescription(prescriptionId);
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(new ApiResponse(HTTP_STATUS.OK, null, "Prescription deleted"));
   });
 }
 

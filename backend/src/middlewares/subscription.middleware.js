@@ -1,5 +1,5 @@
-const User = require("../models/user.model");
 const Patient = require("../models/patient.model");
+const User = require("../models/user.model"); // ✅ Fixed: was missing — caused ReferenceError on every patient route
 const ApiError = require("../utils/ApiError");
 const { HTTP_STATUS, PLANS, ROLES } = require("../constants");
 

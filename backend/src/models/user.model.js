@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
       minlength: [2, "Name must be at least 2 characters"],
       maxlength: [50, "Name cannot exceed 50 characters"],
     },
+
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -22,27 +23,31 @@ const userSchema = new mongoose.Schema(
       match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
       index: true,
     },
+
     password: {
       type: String,
       required: [true, "Password is required"],
       minlength: [8, "Password must be at least 8 characters"],
       select: false,
     },
+
     role: {
       type: String,
       enum: Object.values(ROLES),
       default: ROLES.PATIENT,
     },
+
     subscriptionPlan: {
       type: String,
       enum: Object.values(PLANS),
       default: PLANS.FREE,
-      // Only meaningful for ADMIN
     },
+
     refreshToken: {
       type: String,
       select: false,
     },
+
     isActive: {
       type: Boolean,
       default: true,
@@ -50,6 +55,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+
     toJSON: {
       transform(_doc, ret) {
         delete ret.password;
@@ -58,6 +64,7 @@ const userSchema = new mongoose.Schema(
         return ret;
       },
     },
+
     toObject: {
       transform(_doc, ret) {
         delete ret.password;
@@ -69,16 +76,20 @@ const userSchema = new mongoose.Schema(
   },
 );
 
+// PASSWORD HASH
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
+
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
+// COMPARE PASSWORD
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
+// ACCESS TOKEN
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     { _id: this._id, email: this.email, role: this.role },
@@ -87,6 +98,7 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
+// REFRESH TOKEN
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign({ _id: this._id }, env.JWT_REFRESH_SECRET, {
     expiresIn: env.JWT_REFRESH_EXPIRY,

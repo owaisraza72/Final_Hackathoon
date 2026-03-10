@@ -64,10 +64,32 @@ class PrescriptionService {
 
   /**
    * Get all prescriptions for a patient
+   * Supports both direct patientId or linked userId
    */
-  getPatientPrescriptions = async (patientId) => {
-    const prescriptions = await Prescription.find({ patientId })
+  getPatientPrescriptions = async (identifier) => {
+    // 1. Resolve patient record from identifier (it could be a direct ID or userId)
+    const patient = await Patient.findOne({
+      $or: [{ _id: identifier }, { userId: identifier }],
+      isActive: true,
+    });
+
+    const targetPatientId = patient ? patient._id : identifier;
+
+    const prescriptions = await Prescription.find({
+      patientId: targetPatientId,
+    })
       .populate("doctorId", "name email")
+      .sort({ createdAt: -1 });
+
+    return prescriptions;
+  };
+
+  /**
+   * Get all prescriptions issued by a doctor
+   */
+  getDoctorPrescriptions = async (doctorId) => {
+    const prescriptions = await Prescription.find({ doctorId })
+      .populate("patientId", "name age gender contact")
       .sort({ createdAt: -1 });
 
     return prescriptions;
@@ -258,6 +280,19 @@ class PrescriptionService {
 
       doc.end();
     });
+  };
+
+  /**
+   * Delete a prescription
+   */
+  deletePrescription = async (id) => {
+    const prescription = await Prescription.findByIdAndDelete(id);
+
+    if (!prescription) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Prescription not found");
+    }
+
+    return prescription;
   };
 }
 

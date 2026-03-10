@@ -1,36 +1,59 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRegisterPatientMutation } from "@/features/patients/patientApi";
 import PageHeader from "@/components/ui/PageHeader";
 import { toast } from "sonner";
-import { UserPlus, Activity } from "lucide-react";
+import { UserPlus, Activity, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  age: z.coerce.number().min(0, "Age must be valid"),
-  gender: z.enum(["male", "female", "other"]),
-  contact: z
-    .string()
-    .min(10, "Valid contact number required")
-    .regex(/^[0-9+\-\s]+$/, "Invalid format"),
-  email: z.string().email("Invalid email format").optional().or(z.literal("")),
-  address: z.string().optional(),
-  bloodGroup: z
-    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"])
-    .optional(),
-  emergencyContact: z
-    .object({
-      name: z.string().optional(),
-      phone: z.string().optional(),
-      relation: z.string().optional(),
-    })
-    .optional(),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    age: z.coerce.number().min(0, "Age must be valid"),
+    gender: z.enum(["male", "female", "other"]),
+    contact: z
+      .string()
+      .min(10, "Valid contact number required")
+      .regex(/^[0-9+\-\s]+$/, "Invalid format"),
+    email: z
+      .string()
+      .email("Invalid email format")
+      .optional()
+      .or(z.literal("")),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .optional()
+      .or(z.literal("")),
+    confirmPassword: z.string().optional().or(z.literal("")),
+    address: z.string().optional(),
+    bloodGroup: z
+      .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"])
+      .optional(),
+    emergencyContact: z
+      .object({
+        name: z.string().optional(),
+        phone: z.string().optional(),
+        relation: z.string().optional(),
+      })
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.password && data.confirmPassword) {
+        return data.password === data.confirmPassword;
+      }
+      return true;
+    },
+    { message: "Passwords do not match", path: ["confirmPassword"] },
+  );
 
 const RegisterPatient = () => {
   const [registerPatient, { isLoading }] = useRegisterPatientMutation();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -44,7 +67,11 @@ const RegisterPatient = () => {
 
   const onSubmit = async (data) => {
     try {
-      await registerPatient(data).unwrap();
+      // Strip confirmPassword before sending to API
+      const { confirmPassword, ...payload } = data;
+      // Remove empty password so backend uses default
+      if (!payload.password) delete payload.password;
+      await registerPatient(payload).unwrap();
       toast.success("Patient registered successfully!");
       navigate("/receptionist");
     } catch (err) {
@@ -183,6 +210,73 @@ const RegisterPatient = () => {
               {errors.email && (
                 <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
                   {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                Portal Password
+              </label>
+              <div className="relative">
+                <input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min. 8 characters"
+                  className="w-full h-14 px-5 pr-12 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((p) => !p)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password ? (
+                <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
+                  {errors.password.message}
+                </p>
+              ) : (
+                <p className="text-[10px] text-slate-400 mt-1 ml-1">
+                  Leave blank to use default:{" "}
+                  <span className="font-bold text-slate-500">Patient@123</span>
+                </p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  {...register("confirmPassword")}
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Re-enter password"
+                  className="w-full h-14 px-5 pr-12 bg-slate-50/50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((p) => !p)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors"
+                >
+                  {showConfirm ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
+                  {errors.confirmPassword.message}
                 </p>
               )}
             </div>

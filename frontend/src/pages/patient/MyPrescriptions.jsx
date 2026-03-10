@@ -20,13 +20,15 @@ import { toast } from "sonner";
 
 const MyPrescriptions = () => {
   const { user } = useAuth();
-  
+
   // FIXED: Changed from user?.profileId to user?._id for proper User reference
   // Backend endpoint `/prescriptions/patient/:id` can handle both patient ID and "me" alias
   // For now we use user._id even though patients are data-only; needs backend update for full patient portal
-  const { data: prescriptions, isLoading, error } = useGetPatientPrescriptionsQuery(
-    user?._id || "me",
-  );
+  const {
+    data: prescriptions,
+    isLoading,
+    error,
+  } = useGetPatientPrescriptionsQuery(user?._id || "me");
   const [downloadPDF, { isLoading: isDownloading }] = useLazyDownloadPDFQuery();
   const [explainRx, { isLoading: isExplaining }] =
     useLazyExplainPrescriptionQuery();
@@ -38,17 +40,17 @@ const MyPrescriptions = () => {
     try {
       // FIXED: Improved PDF download with better error handling
       const result = await downloadPDF(id).unwrap();
-      
+
       // Handle both blob and JSON response (in case of error wrapped in JSON)
       let blob = result;
       if (result instanceof Blob) {
         blob = result;
-      } else if (typeof result === 'object') {
+      } else if (typeof result === "object") {
         // If it's JSON error, show error message
         toast.error(result.message || "PDF generation failed");
         return;
       }
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -58,7 +60,7 @@ const MyPrescriptions = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.success("Prescription downloaded successfully");
     } catch (err) {
       console.error("Download error:", err);
@@ -67,7 +69,9 @@ const MyPrescriptions = () => {
       } else if (err?.status === 404) {
         toast.error("Prescription not found");
       } else {
-        toast.error(err?.data?.message || "PDF download failed. Please try again.");
+        toast.error(
+          err?.data?.message || "PDF download failed. Please try again.",
+        );
       }
     }
   };
@@ -116,8 +120,12 @@ const MyPrescriptions = () => {
         </div>
       ) : error ? (
         <div className="bg-red-50 border border-red-200 rounded-[40px] p-8 text-center">
-          <p className="text-red-600 font-semibold">Failed to load prescriptions</p>
-          <p className="text-sm text-red-500 mt-2">Please ensure you have the appropriate permissions</p>
+          <p className="text-red-600 font-semibold">
+            Failed to load prescriptions
+          </p>
+          <p className="text-sm text-red-500 mt-2">
+            Please ensure you have the appropriate permissions
+          </p>
         </div>
       ) : prescriptions?.length === 0 ? (
         <div className="bg-white p-20 text-center rounded-[40px] border border-slate-200/60 premium-shadow">
@@ -155,14 +163,31 @@ const MyPrescriptions = () => {
                   </h3>
                   <div className="flex items-center gap-2 mt-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                      Authorized on{" "}
-                      {new Date(rx.createdAt).toLocaleDateString(undefined, {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">
+                          Authorized by:{" "}
+                          <span className="text-indigo-600">
+                            Dr. {rx.doctorId?.name || "MD-ARCHIVE"}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                          Validated on:{" "}
+                          {new Date(rx.createdAt).toLocaleDateString(
+                            undefined,
+                            {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

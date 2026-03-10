@@ -1,5 +1,5 @@
 // services/admin.service.js
-const User = require("../models/user.model");
+const User = require("../models/user.model"); 
 const Patient = require("../models/patient.model");
 const Appointment = require("../models/appointment.model");
 const Prescription = require("../models/prescription.model");

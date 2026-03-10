@@ -51,7 +51,6 @@ router.delete("/users/:id", adminController.deleteUser);
 // @route   GET /api/v1/admin/analytics
 // @desc    Get dashboard analytics for the clinic
 router.get("/analytics", adminController.analytics);
-
 // @route   PATCH /api/v1/admin/settings
 // @desc    Update Clinic Name or Subscription Plan
 // @body    { "plan": "PRO", "clinicName": "Updated Clinic" }

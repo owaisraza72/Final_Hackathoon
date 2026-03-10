@@ -21,6 +21,7 @@ const authenticate = asyncHandler(async (req, _res, next) => {
   }
 
   let decoded;
+
   try {
     decoded = jwt.verify(token, env.JWT_ACCESS_SECRET);
   } catch {
@@ -36,7 +37,7 @@ const authenticate = asyncHandler(async (req, _res, next) => {
     );
   }
 
-  // ── Lifecycle log: trace role for debugging ──
+  // Lifecycle log (debugging)
   if (process.env.NODE_ENV !== "production") {
     console.log(
       `[Auth] Authenticated → id=${user._id} | role=${user.role} | ${req.method} ${req.originalUrl}`,
@@ -44,6 +45,7 @@ const authenticate = asyncHandler(async (req, _res, next) => {
   }
 
   req.user = user;
+
   next();
 });
 
@@ -76,7 +78,6 @@ const authorize = (...allowedRoles) => {
 const authorizeOwner = (req, _res, next) => {
   const paramId = req.params.id;
   const userId = req.user._id.toString();
-
   const isAdmin = req.user.role === ROLES.ADMIN;
 
   if (paramId !== userId && !isAdmin) {
@@ -89,4 +90,8 @@ const authorizeOwner = (req, _res, next) => {
   next();
 };
 
-module.exports = { authenticate, authorize, authorizeOwner };
+module.exports = {
+  authenticate,
+  authorize,
+  authorizeOwner,
+};

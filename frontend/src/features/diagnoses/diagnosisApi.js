@@ -35,17 +35,31 @@ export const diagnosisApi = createApi({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Diagnosis"],
+      invalidatesTags: ["Diagnosis", "PatientHistory"],
     }),
     getPatientDiagnoses: builder.query({
       query: (patientId) => `diagnoses/patient/${patientId}`,
       providesTags: ["Diagnosis"],
       transformResponse: (res) => res.data?.diagnoses || res.data,
     }),
-    getDiagnosisDetail: builder.query({
-      query: (id) => `diagnoses/${id}`,
-      providesTags: (result, error, id) => [{ type: "Diagnosis", id }],
-      transformResponse: (res) => res.data?.diagnosis || res.data,
+    updateDiagnosis: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `diagnoses/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Diagnosis", id },
+        "Diagnosis",
+        "PatientHistory",
+      ],
+    }),
+    deleteDiagnosis: builder.mutation({
+      query: (id) => ({
+        url: `diagnoses/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Diagnosis", "PatientHistory"],
     }),
   }),
 });
@@ -53,5 +67,6 @@ export const diagnosisApi = createApi({
 export const {
   useCreateDiagnosisMutation,
   useGetPatientDiagnosesQuery,
-  useGetDiagnosisDetailQuery,
+  useUpdateDiagnosisMutation,
+  useDeleteDiagnosisMutation,
 } = diagnosisApi;

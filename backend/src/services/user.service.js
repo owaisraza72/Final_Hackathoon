@@ -31,7 +31,9 @@ class UserService {
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
+
     const total = await User.countDocuments(filter);
+
     const users = await User.find(filter)
       .sort(sort)
       .skip(skip)
@@ -54,9 +56,11 @@ class UserService {
    */
   async getUserById(userId) {
     const user = await User.findById(userId);
+
     if (!user) {
       throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
     }
+
     return user;
   }
 
@@ -87,11 +91,13 @@ class UserService {
    */
   async changePassword(userId, { currentPassword, newPassword }) {
     const user = await User.findById(userId).select("+password");
+
     if (!user) {
       throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
     }
 
     const isPasswordValid = await user.comparePassword(currentPassword);
+
     if (!isPasswordValid) {
       throw new ApiError(
         HTTP_STATUS.BAD_REQUEST,
@@ -101,6 +107,7 @@ class UserService {
 
     user.password = newPassword;
     user.refreshToken = undefined;
+
     await user.save();
 
     return user;

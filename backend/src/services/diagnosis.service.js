@@ -59,6 +59,35 @@ class DiagnosisService {
 
     return log;
   };
+  /**
+   * Update a diagnosis log
+   */
+  updateDiagnosis = async (id, data) => {
+    const diagnosis = await DiagnosisLog.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true, runValidators: true },
+    );
+
+    if (!diagnosis) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Diagnosis record not found");
+    }
+
+    return diagnosis;
+  };
+
+  /**
+   * Delete a diagnosis log
+   */
+  deleteDiagnosis = async (id) => {
+    const diagnosis = await DiagnosisLog.findByIdAndDelete(id);
+
+    if (!diagnosis) {
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Diagnosis record not found");
+    }
+
+    return diagnosis;
+  };
 }
 
 module.exports = new DiagnosisService();

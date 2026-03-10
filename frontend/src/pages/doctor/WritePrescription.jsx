@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useCreatePrescriptionMutation } from "@/features/prescriptions/prescriptionApi";
+import {
+  useCreatePrescriptionMutation,
+  useGetPrescriptionQuery,
+  useUpdatePrescriptionMutation,
+} from "@/features/prescriptions/prescriptionApi";
 import { useListPatientsQuery } from "@/features/patients/patientApi";
 import PageHeader from "@/components/ui/PageHeader";
 import { toast } from "sonner";
 import { Plus, Trash2, Pill, CheckCircle, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 // Client-side schema mirroring backend
 const prescriptionSchema = z.object({
@@ -27,10 +31,20 @@ const prescriptionSchema = z.object({
 });
 
 const WritePrescription = () => {
-  const { data: patients, isLoading: loadingPatients } = useListPatientsQuery();
-  const [createPrescription, { isLoading: isSubmitting }] =
-    useCreatePrescriptionMutation();
+  const { id } = useParams();
   const navigate = useNavigate();
+
+  const { data: patients, isLoading: loadingPatients } = useListPatientsQuery();
+  const { data: existingPrescription, isLoading: loadingExisting } =
+    useGetPrescriptionQuery(id, { skip: !id });
+
+  const [createPrescription, { isLoading: isCreating }] =
+    useCreatePrescriptionMutation();
+  const [updatePrescription, { isLoading: isUpdating }] =
+    useUpdatePrescriptionMutation();
+
+  const isEdit = !!id;
+  const isSubmitting = isCreating || isUpdating;
 
   const {
     register,
@@ -50,6 +64,23 @@ const WritePrescription = () => {
     },
   });
 
+  useEffect(() => {
+    if (isEdit && existingPrescription) {
+      reset({
+        patientId:
+          existingPrescription.patientId?._id || existingPrescription.patientId,
+        diagnosis: existingPrescription.diagnosis,
+        medicines: existingPrescription.medicines?.map((m) => ({
+          name: m.name,
+          dosage: m.dosage,
+          frequency: m.frequency,
+          duration: m.duration,
+        })),
+        instructions: existingPrescription.instructions,
+      });
+    }
+  }, [isEdit, existingPrescription, reset]);
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "medicines",
@@ -57,12 +88,21 @@ const WritePrescription = () => {
 
   const onSubmit = async (data) => {
     try {
-      await createPrescription(data).unwrap();
-      toast.success("Prescription saved successfully!");
-      reset();
-      navigate("/doctor");
+      if (isEdit) {
+        await updatePrescription({ id, data }).unwrap();
+        toast.success("Prescription updated successfully!");
+        navigate("/doctor/prescriptions");
+      } else {
+        await createPrescription(data).unwrap();
+        toast.success("Prescription saved successfully!");
+        reset();
+        navigate("/doctor/prescriptions");
+      }
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to save prescription");
+      toast.error(
+        err?.data?.message ||
+          `Failed to ${isEdit ? "update" : "save"} prescription`,
+      );
     }
   };
 
@@ -264,7 +304,7 @@ const WritePrescription = () => {
                 </div>
               ) : (
                 <>
-                  Issue Digital Rx
+                  {isEdit ? "Update Medical Record" : "Issue Digital Rx"}
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}

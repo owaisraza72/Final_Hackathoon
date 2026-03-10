@@ -10,24 +10,24 @@ import {
   CalendarCheck,
   Droplet,
   Phone,
+  BrainCircuit,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const PatientDashboard = () => {
   const { user } = useAuth();
 
-  // FIXED: Patient dashboard now gracefully handles data loading
-  // Since patients are data-only records (not User accounts), we skip query if user is PATIENT role
-  // For doctors/staff viewing patient histories, use PatientDetail component instead
-  // For demo: Show empty state for patient role users
-  const shouldFetchHistory = user?.role !== "PATIENT";
-  
-  const { data: history, isLoading, error } = useGetPatientHistoryQuery(
-    user?._id || "me",
-    { skip: !shouldFetchHistory }
-  );
+  // Patients can now view their own history!
+  const {
+    data: history,
+    isLoading,
+    error,
+  } = useGetPatientHistoryQuery(user?._id, {
+    skip: !user?._id,
+  });
 
-  // FIXED: Handle loading, errors, and missing patient data gracefully
+  // FIXED: Handle loading, errors, and missing data
   if (isLoading) {
     return (
       <div className="flex h-[60vh] justify-center items-center">
@@ -36,32 +36,21 @@ const PatientDashboard = () => {
     );
   }
 
-  // Show message for patient role users (not yet implemented)
-  if (user?.role === "PATIENT") {
-    return (
-      <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <PageHeader
-          title="Patient Portal"
-          description="Your health records and appointment management"
-        />
-        <div className="bg-white rounded-[40px] border border-slate-200 p-12 text-center">
-          <User className="h-16 w-16 mx-auto mb-4 text-slate-300" />
-          <h3 className="text-xl font-black text-slate-700 mb-2">Portal Coming Soon</h3>
-          <p className="text-slate-500 mb-6">Patient self-service portal is under development.</p>
-          <p className="text-sm text-slate-400">Contact your clinic for medical records access.</p>
-        </div>
-      </div>
-    );
-  }
-
   // Handle error or missing data
   if (error) {
     return (
       <div className="max-w-7xl mx-auto space-y-6">
-        <PageHeader title="Patient History" description="View patient medical records" />
+        <PageHeader
+          title="Patient History"
+          description="View patient medical records"
+        />
         <div className="bg-red-50 border border-red-200 rounded-[40px] p-6 text-center">
-          <p className="text-red-600 font-semibold">Unable to load patient history</p>
-          <p className="text-sm text-red-500 mt-1">Please try again or select another patient</p>
+          <p className="text-red-600 font-semibold">
+            Unable to load patient history
+          </p>
+          <p className="text-sm text-red-500 mt-1">
+            Please try again or select another patient
+          </p>
         </div>
       </div>
     );
@@ -223,8 +212,66 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        {/* Prescription Repository */}
+        {/* AI Analytical History */}
         <div className="bg-white rounded-[40px] premium-shadow border border-slate-200/60 overflow-hidden">
+          <div className="p-8 border-b border-indigo-100/30 flex justify-between items-center bg-indigo-50/20">
+            <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+              <BrainCircuit className="h-6 w-6 text-indigo-600" />
+              AI Analytical History
+            </h3>
+            <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-[9px] font-black uppercase tracking-widest rounded-lg border border-indigo-200">
+              Gemini Engine Active
+            </span>
+          </div>
+          <div className="p-8 space-y-4">
+            {!history?.diagnoses?.length ? (
+              <div className="text-center py-16 opacity-30">
+                <BrainCircuit className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                <p className="text-[10px] font-black uppercase tracking-widest">
+                  No Analytical Logs
+                </p>
+              </div>
+            ) : (
+              history.diagnoses.slice(0, 3).map((diag) => (
+                <div
+                  key={diag._id}
+                  className="p-5 bg-white rounded-3xl border border-slate-100 hover:border-indigo-200 transition-all group"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {diag.symptoms?.slice(0, 3).map((s, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 bg-slate-50 text-slate-500 text-[9px] font-black uppercase rounded-lg border border-slate-100"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                    <span
+                      className={`text-[8px] font-black px-2 py-0.5 rounded-lg uppercase ${diag.riskLevel === "high" ? "bg-red-50 text-red-500" : "bg-teal-50 text-teal-600"}`}
+                    >
+                      {diag.riskLevel} Risk
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-bold text-slate-700 line-clamp-2">
+                      {diag.aiParsed?.recommendations?.[0] ||
+                        "No critical alerts detected."}
+                    </p>
+                    <p className="text-[9px] font-bold text-slate-400">
+                      Validated on{" "}
+                      {new Date(diag.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Prescription Repository */}
+        <div className="bg-white rounded-[40px] premium-shadow border border-slate-200/60 overflow-hidden lg:col-span-2">
           <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3">
               <FileText className="h-6 w-6 text-indigo-600" />
@@ -237,9 +284,9 @@ const PatientDashboard = () => {
               Vault Access
             </Link>
           </div>
-          <div className="p-8 space-y-4">
+          <div className="p-8 grid md:grid-cols-2 gap-4">
             {recentPrescriptions.length === 0 ? (
-              <div className="text-center py-16 opacity-30">
+              <div className="text-center py-16 opacity-30 md:col-span-2">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-slate-300" />
                 <p className="text-[10px] font-black uppercase tracking-widest">
                   Repository Empty

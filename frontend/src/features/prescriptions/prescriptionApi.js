@@ -42,6 +42,11 @@ export const prescriptionApi = createApi({
       providesTags: ["Prescription"],
       transformResponse: (res) => res.data?.prescriptions || res.data,
     }),
+    getDoctorPrescriptions: builder.query({
+      query: () => "prescriptions/doctor",
+      providesTags: ["Prescription"],
+      transformResponse: (res) => res.data?.prescriptions || res.data,
+    }),
     getPrescription: builder.query({
       query: (id) => `prescriptions/${id}`,
       providesTags: (result, error, id) => [{ type: "Prescription", id }],
@@ -54,12 +59,33 @@ export const prescriptionApi = createApi({
         responseHandler: "blob",
       }),
     }),
+    updatePrescription: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `prescriptions/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Prescription", id },
+        "Prescription",
+      ],
+    }),
+    deletePrescription: builder.mutation({
+      query: (id) => ({
+        url: `prescriptions/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Prescription"],
+    }),
   }),
 });
 
 export const {
   useCreatePrescriptionMutation,
   useGetPatientPrescriptionsQuery,
+  useGetDoctorPrescriptionsQuery,
   useGetPrescriptionQuery,
   useLazyDownloadPDFQuery,
+  useUpdatePrescriptionMutation,
+  useDeletePrescriptionMutation,
 } = prescriptionApi;

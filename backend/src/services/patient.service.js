@@ -1,14 +1,17 @@
 // services/patient.service.js
+
 const Patient = require("../models/patient.model");
+const User = require("../models/user.model"); // ✅ needed to create auth account for patient
 const Appointment = require("../models/appointment.model");
 const Prescription = require("../models/prescription.model");
 const DiagnosisLog = require("../models/diagnosisLog.model");
-const User = require("../models/user.model");
 const ApiError = require("../utils/ApiError");
-const { HTTP_STATUS } = require("../constants");
+const { HTTP_STATUS, ROLES, PLANS } = require("../constants");
 
 class PatientService {
-  // ── Register new patient ──
+  // ─────────────────────────
+  // Register new patient
+  // ─────────────────────────
   registerPatient = async (data, registeredBy) => {
     const {
       name,
@@ -20,38 +23,86 @@ class PatientService {
       bloodGroup,
       allergies,
       emergencyContact,
+      password,
     } = data;
 
-    // Check duplicate contact
-    const existing = await Patient.findOne({
+    // ── Duplicate contact check ──
+    const existingContact = await Patient.findOne({
       contact,
       isActive: true,
     });
 
-    if (existing) {
+    if (existingContact) {
       throw new ApiError(
         HTTP_STATUS.CONFLICT,
-        `A patient with contact '${contact}' already exists`,
+        `Patient with contact '${contact}' already exists`,
       );
     }
 
+    // ── Duplicate email check (Patient collection) ──
+    if (email) {
+      const existingEmail = await Patient.findOne({
+        email,
+        isActive: true,
+      });
+
+      if (existingEmail) {
+        throw new ApiError(
+          HTTP_STATUS.CONFLICT,
+          `Patient with email '${email}' already exists`,
+        );
+      }
+    }
+
+    // ── Create Patient medical record ──
     const patient = await Patient.create({
       name,
       age,
       gender,
       contact,
-      email: email || undefined,
-      address: address || undefined,
+      email,
+      password: password || undefined,
+      address: address || "",
       bloodGroup: bloodGroup || "unknown",
       allergies: allergies || [],
       emergencyContact: emergencyContact || {},
       createdBy: registeredBy,
     });
 
+    // ── Also create a User auth account if email is provided ──
+    // This allows the patient to login to their portal
+    if (email) {
+      let existingUser = await User.findOne({ email });
+
+      if (!existingUser) {
+        // Use provided password, or generate a default one
+        const userPassword = password || "Patient@123";
+
+        const newUser = await User.create({
+          name,
+          email,
+          password: userPassword,
+          role: ROLES.PATIENT,
+          subscriptionPlan: PLANS.FREE,
+          isActive: true,
+        });
+
+        // Link User ID back to Patient
+        patient.userId = newUser._id;
+        await patient.save({ validateBeforeSave: false });
+      } else if (existingUser.role === ROLES.PATIENT) {
+        // Link existing user if not already linked
+        patient.userId = existingUser._id;
+        await patient.save({ validateBeforeSave: false });
+      }
+    }
+
     return patient;
   };
 
-  // ── Get single patient by ID ──
+  // ─────────────────────────
+  // Get patient by ID
+  // ─────────────────────────
   getPatientById = async (patientId) => {
     const patient = await Patient.findOne({
       _id: patientId,
@@ -65,9 +116,12 @@ class PatientService {
     return patient;
   };
 
-  // ── Update patient info ──
+  // ─────────────────────────
+  // Update patient
+  // ─────────────────────────
   updatePatient = async (patientId, updateData) => {
     delete updateData.createdBy;
+    delete updateData.password;
 
     const patient = await Patient.findOneAndUpdate(
       { _id: patientId, isActive: true },
@@ -82,7 +136,9 @@ class PatientService {
     return patient;
   };
 
-  // ── List patients with search & pagination ──
+  // ─────────────────────────
+  // List patients
+  // ─────────────────────────
   listPatients = async ({ search = "", page = 1, limit = 20 } = {}) => {
     const query = { isActive: true };
 
@@ -99,10 +155,11 @@ class PatientService {
 
     const [patients, total] = await Promise.all([
       Patient.find(query)
-        .select("name age gender contact bloodGroup createdAt isActive")
+        .select("name age gender contact email bloodGroup createdAt isActive")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum),
+
       Patient.countDocuments(query),
     ]);
 
@@ -117,25 +174,33 @@ class PatientService {
     };
   };
 
-  // ── Get full patient history (appointments + prescriptions + diagnoses) ──
-  getPatientHistory = async (patientId) => {
+  // ─────────────────────────
+  // Patient full history
+  // ─────────────────────────
+  getPatientHistory = async (identifier) => {
+    // Try finding by direct _id first, then by linked userId
     const patient = await Patient.findOne({
-      _id: patientId,
+      $or: [{ _id: identifier }, { userId: identifier }],
       isActive: true,
     });
+
     if (!patient) {
-      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Patient not found");
+      throw new ApiError(HTTP_STATUS.NOT_FOUND, "Patient record not found");
     }
+
+    const patientId = patient._id;
 
     const [appointments, prescriptions, diagnoses] = await Promise.all([
       Appointment.find({ patientId })
         .populate("doctorId", "name email")
         .sort({ date: -1 })
         .limit(20),
+
       Prescription.find({ patientId })
         .populate("doctorId", "name email")
         .sort({ createdAt: -1 })
         .limit(20),
+
       DiagnosisLog.find({ patientId })
         .populate("doctorId", "name email")
         .sort({ createdAt: -1 })
@@ -150,7 +215,9 @@ class PatientService {
     };
   };
 
-  // ── Soft delete patient ──
+  // ─────────────────────────
+  // Delete patient (soft)
+  // ─────────────────────────
   deletePatient = async (patientId) => {
     const patient = await Patient.findOneAndUpdate(
       { _id: patientId, isActive: true },

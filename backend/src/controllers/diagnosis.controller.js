@@ -58,6 +58,34 @@ class DiagnosisController {
         ),
       );
   });
+
+  // ── PATCH /api/v1/diagnoses/:id ──
+  updateDiagnosis = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const diagnosis = await diagnosisService.updateDiagnosis(id, req.body);
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(
+        new ApiResponse(
+          HTTP_STATUS.OK,
+          { diagnosis },
+          "Diagnosis record updated successfully",
+        ),
+      );
+  });
+
+  // ── DELETE /api/v1/diagnoses/:id ──
+  deleteDiagnosis = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    await diagnosisService.deleteDiagnosis(id);
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(new ApiResponse(HTTP_STATUS.OK, null, "Diagnosis record deleted"));
+  });
 }
 
 module.exports = new DiagnosisController();

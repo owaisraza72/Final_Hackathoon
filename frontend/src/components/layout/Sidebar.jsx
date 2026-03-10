@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import useAuth from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import {
@@ -12,7 +13,20 @@ import {
   LayoutDashboard,
   BrainCircuit,
   History,
+  HeartPulse,
+  Shield,
+  Sparkles,
+  ChevronRight,
+  LogOut,
+  Bell,
+  HelpCircle,
+  Menu,
+  X,
+  Home,
+  Info,
+  Mail,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const getNavLinks = (role) => {
   switch (role) {
@@ -21,22 +35,22 @@ const getNavLinks = (role) => {
         {
           name: "Dashboard",
           path: ROUTES.ADMIN_DASHBOARD,
-          icon: <LayoutDashboard className="h-5 w-5" />,
+          icon: LayoutDashboard,
         },
         {
           name: "Manage Doctors",
           path: "/admin/doctors",
-          icon: <Stethoscope className="h-5 w-5" />,
+          icon: Stethoscope,
         },
         {
           name: "Manage Receptionists",
           path: "/admin/receptionists",
-          icon: <Users className="h-5 w-5" />,
+          icon: Users,
         },
         {
           name: "Subscription",
           path: "/admin/subscription",
-          icon: <Settings className="h-5 w-5" />,
+          icon: Settings,
         },
       ];
     case "DOCTOR":
@@ -44,22 +58,22 @@ const getNavLinks = (role) => {
         {
           name: "Dashboard",
           path: ROUTES.DOCTOR_DASHBOARD,
-          icon: <LayoutDashboard className="h-5 w-5" />,
+          icon: LayoutDashboard,
         },
         {
           name: "My Appointments",
           path: "/doctor/appointments",
-          icon: <CalendarRange className="h-5 w-5" />,
+          icon: CalendarRange,
         },
         {
           name: "Patient History",
           path: "/doctor/patients",
-          icon: <History className="h-5 w-5" />,
+          icon: History,
         },
         {
           name: "AI Assistant",
           path: "/doctor/ai",
-          icon: <BrainCircuit className="h-5 w-5" />,
+          icon: BrainCircuit,
         },
       ];
     case "RECEPTIONIST":
@@ -67,27 +81,27 @@ const getNavLinks = (role) => {
         {
           name: "Dashboard",
           path: ROUTES.RECEPTIONIST_DASHBOARD,
-          icon: <LayoutDashboard className="h-5 w-5" />,
+          icon: LayoutDashboard,
         },
         {
           name: "All Patients",
           path: "/receptionist/patients",
-          icon: <Users className="h-5 w-5" />,
+          icon: Users,
         },
         {
           name: "Register Patient",
           path: "/receptionist/patients/new",
-          icon: <UserPlus className="h-5 w-5" />,
+          icon: UserPlus,
         },
         {
           name: "Book Appointment",
           path: "/receptionist/appointments/new",
-          icon: <CalendarRange className="h-5 w-5" />,
+          icon: CalendarRange,
         },
         {
           name: "Daily Schedule",
           path: "/receptionist/schedule",
-          icon: <Activity className="h-5 w-5" />,
+          icon: Activity,
         },
       ];
     case "PATIENT":
@@ -95,17 +109,17 @@ const getNavLinks = (role) => {
         {
           name: "Dashboard",
           path: ROUTES.PATIENT_DASHBOARD,
-          icon: <LayoutDashboard className="h-5 w-5" />,
+          icon: LayoutDashboard,
         },
         {
           name: "My History",
           path: "/patient/appointments",
-          icon: <History className="h-5 w-5" />,
+          icon: History,
         },
         {
           name: "My Prescriptions",
           path: "/patient/prescriptions",
-          icon: <FileText className="h-5 w-5" />,
+          icon: FileText,
         },
       ];
     default:
@@ -113,87 +127,311 @@ const getNavLinks = (role) => {
   }
 };
 
+// Public navigation for non-authenticated users
+const publicNavLinks = [
+  { name: "Home", path: ROUTES.HOME, icon: Home },
+  { name: "About", path: ROUTES.ABOUT, icon: Info },
+  { name: "Contact", path: ROUTES.CONTACT, icon: Mail },
+];
+
 const Sidebar = () => {
-  const { role, user } = useAuth();
+  const { role, user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
-  const navLinks = getNavLinks(role);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navLinks = isAuthenticated ? getNavLinks(role) : publicNavLinks;
+  const isActive = (path) => location.pathname === path;
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  const sidebarVariants = {
+    expanded: { width: 280 },
+    collapsed: { width: 80 },
+    mobile: { width: "100%", maxWidth: 320 },
+  };
+
+  const menuItemVariants = {
+    hover: {
+      x: 5,
+      transition: { type: "spring", stiffness: 400, damping: 17 },
+    },
+    tap: { scale: 0.98 },
+  };
 
   return (
-    <aside className="w-72 sidebar-gradient text-white flex flex-col shrink-0 relative z-20">
-      {/* Clinic/App Logo Area */}
-      <div className="h-20 flex items-center px-8 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 clinical-gradient rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20">
-            <Stethoscope className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-black tracking-tight text-white leading-none">
-              Clinic<span className="text-teal-400">OS</span>
-            </h1>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mt-1">
-              Smart Healthcare
-            </p>
-          </div>
-        </div>
-      </div>
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="fixed top-4 left-4 z-50 md:hidden bg-slate-800 text-white p-2.5 rounded-xl shadow-xl border border-slate-700"
+      >
+        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
 
-      {/* Navigation */}
-      <nav className="flex-1 w-full px-4 space-y-1.5 overflow-y-auto pt-2">
-        <p className="px-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4">
-          Menu
-        </p>
-        {navLinks.map((link) => {
-          const isActive = location.pathname === link.path;
-          return (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-300 group ${
-                isActive
-                  ? "bg-teal-500/15 text-teal-400 border border-teal-500/20 shadow-[0_0_20px_rgba(20,184,166,0.1)]"
-                  : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
-              }`}
-            >
-              <div
-                className={`transition-colors duration-300 ${isActive ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"}`}
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.aside
+        variants={sidebarVariants}
+        initial="expanded"
+        animate={
+          isMobileMenuOpen ? "mobile" : isCollapsed ? "collapsed" : "expanded"
+        }
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className={`fixed md:static top-0 left-0 h-screen bg-slate-900 text-white flex flex-col z-50 shadow-2xl overflow-hidden ${
+          isMobileMenuOpen ? "block" : "hidden md:block"
+        }`}
+      >
+        {/* Header with Logo */}
+        <div className="h-20 flex items-center px-4 border-b border-slate-800">
+          <AnimatePresence mode="wait">
+            {!isCollapsed ? (
+              <motion.div
+                key="expanded"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-between w-full"
               >
-                {link.icon}
-              </div>
-              <span className="font-semibold text-[15px]">{link.name}</span>
-              {isActive && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,1)]" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-500 flex items-center justify-center shadow-lg">
+                    <HeartPulse className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-black text-white">
+                      Clinic<span className="text-teal-400">OS</span>
+                    </h1>
+                    <p className="text-[8px] uppercase tracking-wider text-slate-500 font-bold">
+                      HEALTHCARE OS
+                    </p>
+                  </div>
+                </div>
 
-      {/* Subscription/Clinic Info */}
-      <div className="p-4 mt-auto">
-        <div className="bg-slate-800/40 p-5 rounded-2xl border border-white/5 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-bold text-slate-500 uppercase">
-              System Status
-            </p>
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-0.5">
-              Clinic OS Matrix
-            </span>
-            <span
-              className={`inline-flex w-fit items-center rounded-lg px-2.5 py-1 text-[10px] font-black border uppercase tracking-wider ${
-                user?.subscriptionPlan === "PRO"
-                  ? "bg-teal-500/10 text-teal-400 border-teal-500/20"
-                  : "bg-slate-500/10 text-slate-400 border-slate-500/20"
-              }`}
-            >
-              {user?.subscriptionPlan || "FREE"} Tier
-            </span>
-          </div>
+                {/* Collapse Toggle */}
+                <button
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4 text-slate-500" />
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="collapsed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="w-full flex items-center justify-between"
+              >
+                <div className="w-full flex justify-center">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-500 flex items-center justify-center">
+                    <HeartPulse className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4 text-slate-500 rotate-180" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
-    </aside>
+
+        {/* User Profile Section (only when authenticated) */}
+        {isAuthenticated && !isCollapsed && (
+          <div className="px-4 py-5 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-500 flex items-center justify-center">
+                  <span className="text-lg font-bold text-white">
+                    {user?.name?.charAt(0) || "U"}
+                  </span>
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-white text-sm">
+                  {user?.name || "User"}
+                </p>
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">
+                  {role?.toLowerCase() || "user"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 w-full px-3 py-6 space-y-1 overflow-y-auto">
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4"
+              >
+                {isAuthenticated ? "Menu" : "Navigation"}
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const active = isActive(link.path);
+
+            return (
+              <motion.div
+                key={link.path}
+                variants={menuItemVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                <Link
+                  to={link.path}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                    active
+                      ? "bg-gradient-to-r from-teal-500/20 to-indigo-500/20 text-white border border-teal-500/20"
+                      : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+                  }`}
+                >
+                  <Icon
+                    className={`h-5 w-5 ${active ? "text-teal-400" : "text-slate-500"}`}
+                  />
+
+                  {!isCollapsed && (
+                    <>
+                      <span className="font-medium text-sm flex-1">
+                        {link.name}
+                      </span>
+                      {active && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.8)]" />
+                      )}
+                    </>
+                  )}
+                </Link>
+              </motion.div>
+            );
+          })}
+        </nav>
+
+        {/* Bottom Section */}
+        <div className="p-4 border-t border-slate-800">
+          {isAuthenticated ? (
+            /* Authenticated Bottom Actions */
+            <div className="space-y-2">
+              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors">
+                <Bell className="h-5 w-5" />
+                {!isCollapsed && <span className="text-sm">Notifications</span>}
+              </button>
+
+              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors">
+                <HelpCircle className="h-5 w-5" />
+                {!isCollapsed && (
+                  <span className="text-sm">Help & Support</span>
+                )}
+              </button>
+
+              {/* Subscription Badge */}
+              <div className="mt-4 p-3 rounded-xl bg-slate-800/50 border border-slate-700">
+                {!isCollapsed ? (
+                  <>
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase mb-2">
+                      System Status
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">
+                        Clinic OS Matrix
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-1 rounded-md ${
+                          user?.subscriptionPlan === "PRO"
+                            ? "bg-teal-500/20 text-teal-400 border border-teal-500/30"
+                            : "bg-slate-700 text-slate-400"
+                        }`}
+                      >
+                        {user?.subscriptionPlan || "FREE"} Tier
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-center">
+                    <Sparkles className="h-5 w-5 text-teal-400" />
+                  </div>
+                )}
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={logout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors mt-2"
+              >
+                <LogOut className="h-5 w-5" />
+                {!isCollapsed && <span className="text-sm">Logout</span>}
+              </button>
+            </div>
+          ) : (
+            /* Non-Authenticated Bottom Section */
+            <div className="space-y-3">
+              {!isCollapsed ? (
+                <>
+                  <p className="text-xs text-slate-500 text-center">
+                    Sign in to access your dashboard
+                  </p>
+                  <div className="flex gap-2">
+                    <Link
+                      to={ROUTES.LOGIN}
+                      className="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-xl text-center transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to={ROUTES.REGISTER}
+                      className="flex-1 py-2 px-3 bg-gradient-to-r from-teal-500 to-indigo-500 hover:from-teal-600 hover:to-indigo-600 text-white text-sm font-medium rounded-xl text-center transition-colors"
+                    >
+                      Register
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <Link
+                    to={ROUTES.LOGIN}
+                    className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors"
+                  >
+                    <span className="text-white text-sm font-bold">In</span>
+                  </Link>
+                  <Link
+                    to={ROUTES.REGISTER}
+                    className="w-10 h-10 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-500 flex items-center justify-center hover:from-teal-600 hover:to-indigo-600 transition-colors"
+                  >
+                    <span className="text-white text-sm font-bold">+</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </motion.aside>
+    </>
   );
 };
 

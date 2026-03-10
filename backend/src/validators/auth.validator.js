@@ -21,11 +21,6 @@ const registerSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/,
       "Password must contain uppercase, lowercase, number, and special character (@$!%*?&#)",
     ),
-  clinicName: z
-    .string({ required_error: "Clinic name is required" })
-    .trim()
-    .min(2, "Clinic name must be at least 2 characters")
-    .max(100, "Clinic name cannot exceed 100 characters"),
 });
 
 const loginSchema = z.object({

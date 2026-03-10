@@ -27,6 +27,7 @@ import DoctorDashboard from "@/pages/doctor/DoctorDashboard";
 import MyAppointments from "@/pages/doctor/MyAppointments";
 import PatientHistory from "@/pages/doctor/PatientHistory";
 import WritePrescription from "@/pages/doctor/WritePrescription";
+import PrescriptionHistory from "@/pages/doctor/PrescriptionHistory";
 import AIAssistant from "@/pages/doctor/AIAssistant";
 
 // Receptionist Dashboards
@@ -97,7 +98,9 @@ const router = createBrowserRouter([
       { index: true, element: <DoctorDashboard /> },
       { path: "appointments", element: <MyAppointments /> },
       { path: "patients", element: <PatientHistory /> },
+      { path: "prescriptions", element: <PrescriptionHistory /> },
       { path: "prescriptions/new", element: <WritePrescription /> },
+      { path: "prescriptions/edit/:id", element: <WritePrescription /> },
       { path: "ai", element: <AIAssistant /> },
     ],
   },

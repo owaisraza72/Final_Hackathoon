@@ -1,25 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, LogIn, ArrowRight, AlertCircle } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  AlertCircle,
+  Shield,
+  Fingerprint,
+  HeartPulse,
+  Activity,
+  Scan,
+  Key,
+  Mail,
+  Lock,
+  CheckCircle2,
+  Award,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import useAuth from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Constants
+const MAX_LOGIN_ATTEMPTS = 3;
+const LOCKOUT_DURATION = 30; // seconds
+const ANIMATION_DURATION = 300;
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [focusedField, setFocusedField] = useState(null);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockTimer, setLockTimer] = useState(0);
 
   const { login, isLoggingIn } = useAuth();
   const navigate = useNavigate();
@@ -27,13 +46,48 @@ const LoginPage = () => {
 
   const from = location.state?.from?.pathname || ROUTES.HOME;
 
-  const validateForm = () => {
+  // Memoized values
+  const remainingAttempts = useMemo(
+    () => MAX_LOGIN_ATTEMPTS - loginAttempts,
+    [loginAttempts],
+  );
+
+  const isSubmitDisabled = useMemo(
+    () => isLoggingIn || isLocked,
+    [isLoggingIn, isLocked],
+  );
+
+  // Lockout timer effect
+  useEffect(() => {
+    let interval;
+    if (isLocked && lockTimer > 0) {
+      interval = setInterval(() => {
+        setLockTimer((prev) => {
+          if (prev <= 1) {
+            setIsLocked(false);
+            setLoginAttempts(0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isLocked, lockTimer]);
+
+  // Validation rules
+  const validateEmail = useCallback((email) => {
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    return emailRegex.test(email);
+  }, []);
+
+  const validateForm = useCallback(() => {
     const newErrors = {};
 
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = "Invalid email format";
     }
 
     if (!formData.password) {
@@ -41,164 +95,509 @@ const LoginPage = () => {
     }
 
     setErrors(newErrors);
-    const isValid = Object.keys(newErrors).length === 0;
-    if (!isValid) {
-      toast.error("Please provide email and password.");
-    }
-    return isValid;
-  };
+    return Object.keys(newErrors).length === 0;
+  }, [formData.email, formData.password, validateEmail]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    try {
-      const res = await login(formData).unwrap();
-      const userRole = res.data?.user?.role;
-
-      let targetPath = ROUTES.HOME;
-      if (userRole === "ADMIN") targetPath = ROUTES.ADMIN_DASHBOARD;
-      else if (userRole === "DOCTOR") targetPath = ROUTES.DOCTOR_DASHBOARD;
-      else if (userRole === "RECEPTIONIST")
-        targetPath = ROUTES.RECEPTIONIST_DASHBOARD;
-      else if (userRole === "PATIENT") targetPath = ROUTES.PATIENT_DASHBOARD;
-
-      const destination = location.state?.from?.pathname || targetPath;
-
-      toast.success("Logged in successfully!");
-      navigate(destination, { replace: true });
-    } catch (err) {
-      const message = err?.data?.message || "Login failed. Please try again.";
-      toast.error(message);
-
-      if (err?.data?.errors?.length) {
-        const apiErrors = {};
-        err.data.errors.forEach((e) => {
-          apiErrors[e.field] = e.message;
-        });
-        setErrors(apiErrors);
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
       }
-    }
+    },
+    [errors],
+  );
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+
+      if (isLocked) {
+        toast.error(`Account locked. Try again in ${lockTimer}s`, {
+          icon: "🔒",
+        });
+        return;
+      }
+
+      if (!validateForm()) {
+        toast.error("Please check your credentials", {
+          icon: "⚠️",
+        });
+        return;
+      }
+
+      try {
+        const res = await login(formData).unwrap();
+        const userRole = res.data?.user?.role;
+
+        // Reset login attempts on success
+        setLoginAttempts(0);
+
+        // Role-based routing
+        const roleRoutes = {
+          ADMIN: ROUTES.ADMIN_DASHBOARD,
+          DOCTOR: ROUTES.DOCTOR_DASHBOARD,
+          RECEPTIONIST: ROUTES.RECEPTIONIST_DASHBOARD,
+          PATIENT: ROUTES.PATIENT_DASHBOARD,
+        };
+
+        const targetPath = roleRoutes[userRole] || ROUTES.HOME;
+        const destination = location.state?.from?.pathname || targetPath;
+
+        toast.success("Access granted! Welcome back.", {
+          icon: "🩺",
+          description: `Logged in as ${userRole?.toLowerCase()}`,
+        });
+
+        // Smooth navigation
+        setTimeout(() => {
+          navigate(destination, { replace: true });
+        }, ANIMATION_DURATION);
+      } catch (err) {
+        // Increment login attempts
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+
+        // Lock account after max attempts
+        if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+          setIsLocked(true);
+          setLockTimer(LOCKOUT_DURATION);
+          toast.error("Account temporarily locked", {
+            icon: "🔒",
+            description: `Too many failed attempts. Try again in ${LOCKOUT_DURATION} seconds.`,
+          });
+        } else {
+          const message = err?.data?.message || "Invalid credentials";
+          toast.error("Authentication failed", {
+            icon: "❌",
+            description: message,
+          });
+        }
+
+        // Handle API validation errors
+        if (err?.data?.errors?.length) {
+          const apiErrors = {};
+          err.data.errors.forEach((e) => {
+            apiErrors[e.field] = e.message;
+          });
+          setErrors(apiErrors);
+        }
+      }
+    },
+    [
+      formData,
+      isLocked,
+      lockTimer,
+      loginAttempts,
+      login,
+      validateForm,
+      location,
+      navigate,
+    ],
+  );
+
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+      },
+    },
   };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 24 },
+    },
+  };
+
+  const inputClassName = useCallback(
+    (fieldName) => `
+      w-full h-12 bg-white border-2 rounded-xl transition-all text-sm px-4 pr-10
+      ${
+        focusedField === fieldName
+          ? "border-teal-500 ring-4 ring-teal-500/10"
+          : "border-slate-200"
+      }
+      ${errors[fieldName] ? "border-red-300 bg-red-50" : ""}
+    `,
+    [focusedField, errors],
+  );
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden bg-slate-50">
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute -left-[10%] -top-[10%] h-[60%] w-[60%] rounded-full bg-teal-500/10 blur-[120px] animate-pulse" />
-        <div
-          className="absolute -right-[10%] -bottom-[10%] h-[60%] w-[60%] rounded-full bg-indigo-500/10 blur-[120px] animate-pulse"
-          style={{ animationDelay: "2s" }}
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50">
+      {/* Skip to content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-teal-600 text-white px-4 py-2 rounded-lg z-50"
+      >
+        Skip to content
+      </a>
 
-      <div className="w-full max-w-[480px] relative z-10 glass-card p-1 shadow-2xl rounded-[32px] animate-in fade-in zoom-in duration-1000">
-        <div className="bg-white rounded-[31px] overflow-hidden">
-          {/* Header Section */}
-          <div className="pt-12 pb-8 px-10 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 via-indigo-500 to-teal-500 animate-shimmer" />
-            <div className="mx-auto h-16 w-16 mb-6 clinical-gradient rounded-2xl flex items-center justify-center shadow-xl shadow-teal-500/20 rotate-3 hover:rotate-0 transition-transform duration-500">
-              <LogIn className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-2">
-              Clinic<span className="text-teal-600">OS</span>
-            </h1>
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">
-              Precision Practice Management
-            </p>
-          </div>
+      {/* Main Content */}
+      <main
+        id="main-content"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-28"
+      >
+        <div className="max-w-md mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="relative z-10"
+          >
+            {/* Header Section */}
+            <motion.div variants={itemVariants} className="text-center mb-8">
+              <motion.div
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="mx-auto h-20 w-20 mb-4 rounded-2xl bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-teal-500/30 relative overflow-hidden cursor-pointer"
+                role="img"
+                aria-label="ClinicOS Logo"
+              >
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 90, 0],
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  className="absolute inset-0 bg-gradient-to-tr from-white/30 to-transparent"
+                />
+                <Shield className="h-10 w-10 text-white relative z-10" />
+              </motion.div>
 
-          <form onSubmit={handleSubmit} className="px-10 pb-12 space-y-6">
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                  Email Clinical ID
-                </Label>
-                <div className="relative group">
-                  <Input
-                    name="email"
-                    type="email"
-                    placeholder="dr.smith@clinicos.pro"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="h-14 bg-slate-50/50 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all font-medium pl-5"
-                  />
-                  {errors.email && (
-                    <p className="text-[10px] font-bold text-red-500 mt-1 flex items-center gap-1 ml-1 animate-in slide-in-from-top-1">
-                      <AlertCircle className="h-3 w-3" /> {errors.email}
-                    </p>
-                  )}
-                </div>
-              </div>
+              <motion.h1
+                variants={itemVariants}
+                className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-2"
+              >
+                Welcome<span className="text-teal-600">Back</span>
+              </motion.h1>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center ml-1">
-                  <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                    Secret Vault Key
-                  </Label>
-                </div>
-                <div className="relative group">
-                  <Input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••••••"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="h-14 bg-slate-50/50 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all font-medium pl-5 pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                  {errors.password && (
-                    <p className="text-[10px] font-bold text-red-500 mt-1 flex items-center gap-1 ml-1 animate-in slide-in-from-top-1">
-                      <AlertCircle className="h-3 w-3" /> {errors.password}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+              <motion.p
+                variants={itemVariants}
+                className="text-slate-400 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+              >
+                <Scan className="h-3 w-3" />
+                Secure Clinical Portal Access
+                <Scan className="h-3 w-3" />
+              </motion.p>
+            </motion.div>
 
-            <Button
-              disabled={isLoggingIn}
-              className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all duration-300 shadow-xl shadow-slate-900/10 group"
+            {/* Login Card */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden"
             >
-              {isLoggingIn ? (
-                <div className="flex items-center gap-3">
-                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Decrypting...
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-3">
-                  Access Portal
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              )}
-            </Button>
+              {/* Top gradient bar */}
+              <motion.div
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-indigo-500 to-teal-500 bg-[size:200%]"
+                aria-hidden="true"
+              />
 
-            <div className="pt-6 border-t border-slate-100 text-center">
-              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-                Protected by Clinical-Grade Security
+              <form
+                onSubmit={handleSubmit}
+                className="p-6 md:p-8 space-y-5"
+                noValidate
+              >
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="email"
+                    className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2"
+                  >
+                    <Mail className="h-4 w-4" />
+                    Email Address
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="dr.smith@clinic.pro"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField("email")}
+                      onBlur={() => setFocusedField(null)}
+                      className={inputClassName("email")}
+                      aria-invalid={!!errors.email}
+                      aria-describedby={
+                        errors.email ? "email-error" : undefined
+                      }
+                      autoComplete="email"
+                      inputMode="email"
+                    />
+                    <Mail
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4
+                      ${errors.email ? "text-red-400" : "text-slate-400"}`}
+                      aria-hidden="true"
+                    />
+                  </div>
+
+                  <AnimatePresence>
+                    {errors.email && (
+                      <motion.p
+                        id="email-error"
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        className="text-xs text-red-500 flex items-center gap-1"
+                        role="alert"
+                      >
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.email}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label
+                      htmlFor="password"
+                      className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2"
+                    >
+                      <Lock className="h-4 w-4" />
+                      Password
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => toast.info("Password reset coming soon!")}
+                      className="text-[10px] font-bold uppercase text-teal-600 hover:text-teal-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded"
+                    >
+                      Forgot?
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField("password")}
+                      onBlur={() => setFocusedField(null)}
+                      className={inputClassName("password")}
+                      aria-invalid={!!errors.password}
+                      aria-describedby={
+                        errors.password ? "password-error" : undefined
+                      }
+                      autoComplete="current-password"
+                    />
+
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-slate-400 hover:text-teal-600 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 rounded"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </button>
+                      <Fingerprint
+                        className={`h-4 w-4 ml-1 ${errors.password ? "text-red-400" : "text-slate-400"}`}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {errors.password && (
+                      <motion.p
+                        id="password-error"
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        className="text-xs text-red-500 flex items-center gap-1"
+                        role="alert"
+                      >
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.password}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Remember Me & Login Attempts */}
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="sr-only"
+                      aria-label="Remember me"
+                    />
+                    <div
+                      className={`w-4 h-4 rounded border-2 transition-all flex items-center justify-center
+                      ${
+                        rememberMe
+                          ? "bg-teal-500 border-teal-500"
+                          : "border-slate-300 group-hover:border-teal-400"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {rememberMe && (
+                        <CheckCircle2 className="h-3 w-3 text-white" />
+                      )}
+                    </div>
+                    <span className="text-xs font-medium text-slate-600">
+                      Remember me
+                    </span>
+                  </label>
+
+                  <AnimatePresence>
+                    {loginAttempts > 0 && !isLocked && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-xs text-orange-600 flex items-center gap-1"
+                        role="status"
+                      >
+                        <AlertCircle className="h-3 w-3" />
+                        {remainingAttempts}{" "}
+                        {remainingAttempts === 1 ? "attempt" : "attempts"} left
+                      </motion.div>
+                    )}
+
+                    {isLocked && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-xs text-red-600 flex items-center gap-1"
+                        role="alert"
+                      >
+                        <Lock className="h-3 w-3" />
+                        {lockTimer}s
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Submit Button */}
+                <motion.div
+                  whileHover={{ scale: isSubmitDisabled ? 1 : 1.02 }}
+                  whileTap={{ scale: isSubmitDisabled ? 1 : 0.98 }}
+                >
+                  <Button
+                    type="submit"
+                    disabled={isSubmitDisabled}
+                    className="w-full h-12 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white font-bold uppercase tracking-wider text-sm rounded-xl shadow-xl shadow-teal-500/20 transition-all relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-busy={isLoggingIn}
+                  >
+                    {/* Shine effect - only when not disabled */}
+                    {!isSubmitDisabled && (
+                      <motion.div
+                        animate={{
+                          x: ["-100%", "200%"],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          repeatDelay: 1,
+                        }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                        aria-hidden="true"
+                      />
+                    )}
+
+                    {isLoggingIn ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Authenticating...</span>
+                      </div>
+                    ) : isLocked ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Lock className="h-4 w-4" />
+                        <span>Account Locked</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <Key className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+                        <span>Sign In</span>
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    )}
+                  </Button>
+                </motion.div>
+
+                {/* Security Badge */}
+                <div className="pt-4">
+                  <div className="flex items-center justify-center gap-3">
+                    <Shield className="h-3 w-3 text-teal-500" />
+                    <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider">
+                      256-bit Clinical Grade Encryption
+                    </span>
+                    <Shield className="h-3 w-3 text-teal-500" />
+                  </div>
+                </div>
+              </form>
+            </motion.div>
+
+            {/* Register Link */}
+            <motion.div variants={itemVariants} className="mt-6 text-center">
+              <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                New to ClinicOS?{" "}
+                <Link
+                  to={ROUTES.REGISTER}
+                  className="text-teal-600 hover:text-teal-700 ml-1 border-b-2 border-teal-200 hover:border-teal-400 transition-all inline-flex items-center gap-1 group focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded"
+                >
+                  Create Account
+                  <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </p>
-            </div>
-          </form>
+            </motion.div>
+
+            {/* Security Badges */}
+            <motion.div
+              variants={itemVariants}
+              className="flex justify-center gap-4 mt-6"
+            >
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200">
+                <Shield className="h-3 w-3 text-teal-500" />
+                <span className="text-[8px] font-black uppercase text-slate-500">
+                  HIPAA Compliant
+                </span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200">
+                <Award className="h-3 w-3 text-indigo-500" />
+                <span className="text-[8px] font-black uppercase text-slate-500">
+                  256-bit Encryption
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

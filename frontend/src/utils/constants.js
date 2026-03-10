@@ -10,6 +10,8 @@ export const ROLES = Object.freeze({
 
 export const ROUTES = Object.freeze({
   HOME: "/",
+  ABOUT: "/about",
+  CONTACT: "/contact",
   LOGIN: "/login",
   REGISTER: "/register",
 

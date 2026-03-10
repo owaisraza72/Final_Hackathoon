@@ -8,7 +8,10 @@ const hpp = require("hpp");
 const corsOptions = require("./config/cors.config");
 const env = require("./config/env.config");
 const { globalLimiter } = require("./middlewares/rateLimiter.middleware");
-const { errorHandler, notFoundHandler } = require("./middlewares/error.middleware");
+const {
+  errorHandler,
+  notFoundHandler,
+} = require("./middlewares/error.middleware");
 const routes = require("./routes");
 
 const app = express();

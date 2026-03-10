@@ -36,6 +36,15 @@ router.get(
   prescriptionController.getPatientPrescriptions,
 );
 
+// ── Doctor's Archive ──
+// @route   GET /api/v1/prescriptions/doctor
+// @desc    Retrieve all prescriptions issued by the current doctor
+router.get(
+  "/doctor",
+  authorize(ROLES.DOCTOR, ROLES.ADMIN),
+  prescriptionController.getDoctorPrescriptions,
+);
+
 // ── Detail Report ──
 // @route   GET /api/v1/prescriptions/:id
 // @desc    Get full details of a single prescription record
@@ -74,6 +83,15 @@ router.patch(
   authorize(ROLES.DOCTOR, ROLES.ADMIN),
   validate(createPrescriptionSchema),
   prescriptionController.updatePrescription,
+);
+
+// ── Wipe Record ──
+// @route   DELETE /api/v1/prescriptions/:id
+// @desc    Physically remove a prescription entry
+router.delete(
+  "/:id",
+  authorize(ROLES.DOCTOR, ROLES.ADMIN),
+  prescriptionController.deletePrescription,
 );
 
 module.exports = router;

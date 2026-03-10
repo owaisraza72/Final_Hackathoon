@@ -3,6 +3,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/ApiResponse");
 const { HTTP_STATUS } = require("../constants");
 const patientService = require("../services/patient.service");
+const Patient = require("../models/patient.model");
 
 class PatientController {
   // ── POST /api/v1/patients ──
@@ -82,7 +83,23 @@ class PatientController {
 
   // ── GET /api/v1/patients/:id/history ──
   getPatientHistory = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    let { id } = req.params;
+
+    // Handle "me" alias for logged-in patients
+    if (id === "me") {
+      id = req.user._id;
+
+      // PROACTIVE SYNC: Link by email if not already linked
+      const existingPatient = await Patient.findOne({
+        email: req.user.email,
+        isActive: true,
+      });
+
+      if (existingPatient && !existingPatient.userId) {
+        existingPatient.userId = req.user._id;
+        await existingPatient.save({ validateBeforeSave: false });
+      }
+    }
 
     const history = await patientService.getPatientHistory(id);
 

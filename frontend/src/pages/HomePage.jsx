@@ -30,7 +30,13 @@ import {
   Building2,
   ChevronRight,
 } from "lucide-react";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useInView,
+  AnimatePresence,
+} from "framer-motion";
 
 const HomePage = () => {
   const { isAuthenticated, user } = useAuth();
@@ -46,8 +52,8 @@ const HomePage = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const getDashboardRoute = () => {
@@ -117,10 +123,30 @@ const HomePage = () => {
   ];
 
   const stats = [
-    { icon: Users, value: "10,000+", label: "Healthcare Professionals", color: "text-blue-600" },
-    { icon: Activity, value: "500K+", label: "Patients Served", color: "text-teal-600" },
-    { icon: Clock, value: "99.9%", label: "Uptime SLA", color: "text-green-600" },
-    { icon: Award, value: "25+", label: "Industry Awards", color: "text-purple-600" },
+    {
+      icon: Users,
+      value: "10,000+",
+      label: "Healthcare Professionals",
+      color: "text-blue-600",
+    },
+    {
+      icon: Activity,
+      value: "500K+",
+      label: "Patients Served",
+      color: "text-teal-600",
+    },
+    {
+      icon: Clock,
+      value: "99.9%",
+      label: "Uptime SLA",
+      color: "text-green-600",
+    },
+    {
+      icon: Award,
+      value: "25+",
+      label: "Industry Awards",
+      color: "text-purple-600",
+    },
   ];
 
   const benefits = [
@@ -164,21 +190,24 @@ const HomePage = () => {
       name: "Dr. Sarah Chen",
       role: "Cardiologist",
       clinic: "HeartCare Clinic",
-      quote: "ClinicOS has revolutionized how I manage patients. The AI assistant saves me hours daily.",
+      quote:
+        "ClinicOS has revolutionized how I manage patients. The AI assistant saves me hours daily.",
       rating: 5,
     },
     {
       name: "James Wilson",
       role: "Patient",
       clinic: "Regular patient",
-      quote: "Booking appointments and getting prescriptions has never been easier. The app is fantastic!",
+      quote:
+        "Booking appointments and getting prescriptions has never been easier. The app is fantastic!",
       rating: 5,
     },
     {
       name: "Maria Garcia",
       role: "Clinic Administrator",
       clinic: "City Medical Group",
-      quote: "The analytics dashboard gives us insights we never had before. ROI increased by 40%.",
+      quote:
+        "The analytics dashboard gives us insights we never had before. ROI increased by 40%.",
       rating: 5,
     },
   ];
@@ -207,11 +236,12 @@ const HomePage = () => {
 
   return (
     <div className="w-full overflow-x-hidden">
-
-
       {/* Hero Section with Parallax */}
-      <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-teal-50 px-4 py-16 md:py-32 min-h-screen flex items-center">
-        <motion.div 
+      <section
+        ref={heroRef}
+        className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-teal-50 px-4 py-16 md:py-32 min-h-screen flex items-center"
+      >
+        <motion.div
           style={{ opacity: heroOpacity, scale: heroScale }}
           className="container mx-auto max-w-6xl relative z-10"
         >
@@ -232,7 +262,7 @@ const HomePage = () => {
             >
               <HeartPulse size={120} />
             </motion.div>
-            
+
             <motion.div
               animate={{
                 y: [0, 30, 0],
@@ -342,15 +372,17 @@ const HomePage = () => {
                 Modernize Your Clinic with{" "}
                 <motion.span
                   initial={{ backgroundPosition: "0% 50%" }}
-                  animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                  animate={{
+                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                  }}
                   transition={{ duration: 10, repeat: Infinity }}
                   className="bg-gradient-to-r from-teal-600 via-cyan-600 to-teal-600 bg-[size:200%] bg-clip-text text-transparent"
                 >
                   ClinicOS
                 </motion.span>
               </h1>
-              
-              <motion.p 
+
+              <motion.p
                 variants={itemVariants}
                 className="mx-auto max-w-2xl text-lg md:text-xl text-slate-600 leading-relaxed font-medium"
               >
@@ -361,7 +393,7 @@ const HomePage = () => {
             </motion.div>
 
             {/* Stats Preview */}
-            <motion.div 
+            <motion.div
               variants={itemVariants}
               className="flex justify-center gap-8 pt-4"
             >
@@ -373,8 +405,12 @@ const HomePage = () => {
                   transition={{ delay: 0.5 + index * 0.1 }}
                   className="text-center"
                 >
-                  <div className="text-2xl font-black text-slate-900">{stat.value}</div>
-                  <div className="text-xs font-medium text-slate-500">{stat.label}</div>
+                  <div className="text-2xl font-black text-slate-900">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs font-medium text-slate-500">
+                    {stat.label}
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -382,7 +418,7 @@ const HomePage = () => {
             {/* CTA Buttons with Enhanced Animations */}
             <motion.div variants={itemVariants} className="pt-4">
               {isAuthenticated ? (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ type: "spring" }}
@@ -410,7 +446,7 @@ const HomePage = () => {
                       </span>
                     </p>
                   </motion.div>
-                  
+
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -421,7 +457,7 @@ const HomePage = () => {
                       className="bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/20 px-8 h-12 text-base rounded-full group"
                     >
                       <Link to={getDashboardRoute()}>
-                        Go to Dashboard 
+                        Go to Dashboard
                         <motion.div
                           animate={{ x: [0, 5, 0] }}
                           transition={{ duration: 1, repeat: Infinity }}
@@ -433,7 +469,7 @@ const HomePage = () => {
                   </motion.div>
                 </motion.div>
               ) : (
-                <motion.div 
+                <motion.div
                   variants={containerVariants}
                   className="flex flex-col sm:flex-row justify-center gap-4"
                 >
@@ -449,7 +485,7 @@ const HomePage = () => {
                     >
                       <Link to={ROUTES.REGISTER}>
                         <span className="relative z-10 flex items-center">
-                          Get Started Free 
+                          Get Started Free
                           <motion.div
                             animate={{ x: [0, 5, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
@@ -466,7 +502,7 @@ const HomePage = () => {
                       </Link>
                     </Button>
                   </motion.div>
-                  
+
                   <motion.div
                     variants={itemVariants}
                     whileHover={{ scale: 1.05 }}
@@ -524,16 +560,22 @@ const HomePage = () => {
                 className="text-center group"
               >
                 <motion.div
-                  animate={{ 
+                  animate={{
                     rotate: [0, 10, -10, 0],
                   }}
                   transition={{ duration: 2, delay: index * 0.2 }}
                   className="inline-block"
                 >
-                  <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3 group-hover:scale-110 transition-transform`} />
+                  <stat.icon
+                    className={`h-8 w-8 ${stat.color} mx-auto mb-3 group-hover:scale-110 transition-transform`}
+                  />
                 </motion.div>
-                <div className="text-3xl font-black text-slate-900">{stat.value}</div>
-                <div className="text-sm text-slate-500 font-medium">{stat.label}</div>
+                <div className="text-3xl font-black text-slate-900">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-slate-500 font-medium">
+                  {stat.label}
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -575,83 +617,88 @@ const HomePage = () => {
             viewport={{ once: true }}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {features.map(({ icon: Icon, title, desc, color, gradient, stats }, index) => (
-              <motion.div
-                key={title}
-                variants={itemVariants}
-                whileHover={{ 
-                  y: -10,
-                  transition: { type: "spring", stiffness: 300 }
-                }}
-                onHoverStart={() => setHoveredFeature(index)}
-                onHoverEnd={() => setHoveredFeature(null)}
-                className="group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:shadow-teal-900/10"
-              >
-                {/* Animated background gradient */}
+            {features.map(
+              ({ icon: Icon, title, desc, color, gradient, stats }, index) => (
                 <motion.div
-                  animate={{
-                    scale: hoveredFeature === index ? 1.5 : 1,
-                    opacity: hoveredFeature === index ? 0.2 : 0,
+                  key={title}
+                  variants={itemVariants}
+                  whileHover={{
+                    y: -10,
+                    transition: { type: "spring", stiffness: 300 },
                   }}
-                  className={`absolute inset-0 ${gradient}`}
-                />
-                
-                <div className="space-y-6 relative z-10">
+                  onHoverStart={() => setHoveredFeature(index)}
+                  onHoverEnd={() => setHoveredFeature(null)}
+                  className="group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:shadow-teal-900/10"
+                >
+                  {/* Animated background gradient */}
                   <motion.div
                     animate={{
-                      rotate: hoveredFeature === index ? [0, -10, 10, 0] : 0,
+                      scale: hoveredFeature === index ? 1.5 : 1,
+                      opacity: hoveredFeature === index ? 0.2 : 0,
                     }}
-                    transition={{ duration: 0.5 }}
-                    className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${color} text-white shadow-lg relative overflow-hidden`}
-                  >
+                    className={`absolute inset-0 ${gradient}`}
+                  />
+
+                  <div className="space-y-6 relative z-10">
                     <motion.div
                       animate={{
-                        scale: [1, 1.2, 1],
+                        rotate: hoveredFeature === index ? [0, -10, 10, 0] : 0,
                       }}
-                      transition={{ duration: 2, repeat: Infinity }}
+                      transition={{ duration: 0.5 }}
+                      className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${color} text-white shadow-lg relative overflow-hidden`}
                     >
-                      <Icon className="h-7 w-7" />
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.2, 1],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Icon className="h-7 w-7" />
+                      </motion.div>
                     </motion.div>
-                  </motion.div>
-                  
-                  <div className="space-y-3">
-                    <h3 className="font-bold text-xl text-slate-900">
-                      {title}
-                    </h3>
-                    <p className="text-slate-600 leading-relaxed font-medium">
-                      {desc}
-                    </p>
-                  </div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ 
-                      opacity: hoveredFeature === index ? 1 : 0,
-                      y: hoveredFeature === index ? 0 : 10
-                    }}
-                    className="text-xs font-bold text-teal-600 uppercase tracking-wider flex items-center gap-1"
-                  >
-                    <Zap className="h-3 w-3" />
-                    {stats}
-                  </motion.div>
-                </div>
 
-                {/* Decorative corner */}
-                <motion.div
-                  animate={{
-                    opacity: hoveredFeature === index ? 1 : 0,
-                    scale: hoveredFeature === index ? 1 : 0.5,
-                  }}
-                  className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-teal-500/10 to-transparent rounded-tl-3xl"
-                />
-              </motion.div>
-            ))}
+                    <div className="space-y-3">
+                      <h3 className="font-bold text-xl text-slate-900">
+                        {title}
+                      </h3>
+                      <p className="text-slate-600 leading-relaxed font-medium">
+                        {desc}
+                      </p>
+                    </div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{
+                        opacity: hoveredFeature === index ? 1 : 0,
+                        y: hoveredFeature === index ? 0 : 10,
+                      }}
+                      className="text-xs font-bold text-teal-600 uppercase tracking-wider flex items-center gap-1"
+                    >
+                      <Zap className="h-3 w-3" />
+                      {stats}
+                    </motion.div>
+                  </div>
+
+                  {/* Decorative corner */}
+                  <motion.div
+                    animate={{
+                      opacity: hoveredFeature === index ? 1 : 0,
+                      scale: hoveredFeature === index ? 1 : 0.5,
+                    }}
+                    className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-teal-500/10 to-transparent rounded-tl-3xl"
+                  />
+                </motion.div>
+              ),
+            )}
           </motion.div>
         </div>
       </section>
 
       {/* Benefits Section with Cards */}
-      <section id="benefits" className="px-4 py-20 md:py-32 bg-slate-50 border-y border-slate-100">
+      <section
+        id="benefits"
+        className="px-4 py-20 md:py-32 bg-slate-50 border-y border-slate-100"
+      >
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -665,7 +712,9 @@ const HomePage = () => {
             </span>
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
               Built For Everyone in Your
-              <span className="text-indigo-600 block">Healthcare Ecosystem</span>
+              <span className="text-indigo-600 block">
+                Healthcare Ecosystem
+              </span>
             </h2>
           </motion.div>
 
@@ -689,11 +738,11 @@ const HomePage = () => {
                 >
                   <Icon className="h-12 w-12 text-teal-600 mb-6 group-hover:scale-110 transition-transform" />
                 </motion.div>
-                
+
                 <h3 className="font-bold text-2xl text-teal-700 mb-6 pb-4 border-b border-slate-100">
                   {role}
                 </h3>
-                
+
                 <ul className="space-y-4">
                   {items.map((item, i) => (
                     <motion.li
@@ -720,7 +769,7 @@ const HomePage = () => {
                   whileHover={{ x: 5 }}
                   className="mt-6 text-sm font-bold text-teal-600 flex items-center gap-1 group/btn"
                 >
-                  Learn more 
+                  Learn more
                   <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                 </motion.button>
               </motion.div>
@@ -744,7 +793,9 @@ const HomePage = () => {
             </span>
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
               Trusted by Healthcare
-              <span className="text-purple-600 block">Professionals Worldwide</span>
+              <span className="text-purple-600 block">
+                Professionals Worldwide
+              </span>
             </h2>
           </motion.div>
 
@@ -776,9 +827,15 @@ const HomePage = () => {
                       {testimonial.name.charAt(0)}
                     </div>
                     <div>
-                      <div className="font-bold text-slate-900">{testimonial.name}</div>
-                      <div className="text-sm text-slate-500">{testimonial.role}</div>
-                      <div className="text-xs text-teal-600">{testimonial.clinic}</div>
+                      <div className="font-bold text-slate-900">
+                        {testimonial.name}
+                      </div>
+                      <div className="text-sm text-slate-500">
+                        {testimonial.role}
+                      </div>
+                      <div className="text-xs text-teal-600">
+                        {testimonial.clinic}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-1 mt-4">
@@ -870,15 +927,15 @@ const HomePage = () => {
               >
                 Ready to Transform Your Clinic?
               </motion.h2>
-              
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
                 className="text-teal-50 text-xl max-w-2xl mx-auto opacity-90"
               >
-                Join thousands of healthcare providers who've modernized their practice with ClinicOS.
-                Start your 14-day free trial today.
+                Join thousands of healthcare providers who've modernized their
+                practice with ClinicOS. Start your 14-day free trial today.
               </motion.p>
 
               {!isAuthenticated && (
@@ -897,7 +954,7 @@ const HomePage = () => {
                   >
                     <Link to={ROUTES.REGISTER}>
                       <span className="relative z-10 flex items-center">
-                        Get Started Free 
+                        Get Started Free
                         <motion.div
                           animate={{ x: [0, 5, 0] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
@@ -919,42 +976,6 @@ const HomePage = () => {
           </motion.div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-white px-4 py-16">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <HeartPulse className="h-8 w-8 text-teal-400" />
-                <span className="font-bold text-xl">ClinicOS</span>
-              </div>
-              <p className="text-slate-400 text-sm">
-                Modernizing healthcare one clinic at a time with cutting-edge technology.
-              </p>
-            </div>
-            {["Product", "Company", "Resources", "Legal"].map((section) => (
-              <div key={section}>
-                <h4 className="font-bold text-sm uppercase tracking-wider text-teal-400 mb-4">
-                  {section}
-                </h4>
-                <ul className="space-y-2">
-                  {[1, 2, 3, 4].map((item) => (
-                    <li key={item}>
-                      <a href="#" className="text-slate-400 hover:text-white text-sm transition-colors">
-                        Link {item}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="border-t border-slate-800 mt-12 pt-8 text-center text-slate-400 text-sm">
-            © 2024 ClinicOS. All rights reserved. HIPAA compliant & enterprise ready.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
