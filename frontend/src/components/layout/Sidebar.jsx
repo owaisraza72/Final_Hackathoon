@@ -22,11 +22,13 @@ import {
   HelpCircle,
   Menu,
   X,
+  UserRound,
   Home,
   Info,
   Mail,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import NotificationDropdown from "../notifications/NotificationDropdown";
 
 const getNavLinks = (role) => {
   switch (role) {
@@ -48,9 +50,29 @@ const getNavLinks = (role) => {
           icon: Users,
         },
         {
+          name: "Manage Patients",
+          path: "/admin/patients",
+          icon: UserRound,
+        },
+        {
+          name: "All Appointments",
+          path: "/admin/appointments",
+          icon: CalendarRange,
+        },
+        {
+          name: "All Prescriptions",
+          path: "/admin/prescriptions",
+          icon: FileText,
+        },
+        {
           name: "Subscription",
           path: "/admin/subscription",
           icon: Settings,
+        },
+        {
+          name: "Back To Home",
+          path: "/",
+          icon: Home,
         },
       ];
     case "DOCTOR":
@@ -61,19 +83,30 @@ const getNavLinks = (role) => {
           icon: LayoutDashboard,
         },
         {
+          name: "My Patients",
+          path: "/doctor/patients",
+          icon: Users,
+        },
+        {
           name: "My Appointments",
           path: "/doctor/appointments",
           icon: CalendarRange,
         },
+
         {
-          name: "Patient History",
-          path: "/doctor/patients",
-          icon: History,
+          name: "Prescriptions",
+          path: "/doctor/prescriptions",
+          icon: FileText,
         },
         {
           name: "AI Assistant",
           path: "/doctor/ai",
           icon: BrainCircuit,
+        },
+        {
+          name: "Back To Home",
+          path: "/",
+          icon: Home,
         },
       ];
     case "RECEPTIONIST":
@@ -103,6 +136,11 @@ const getNavLinks = (role) => {
           path: "/receptionist/schedule",
           icon: Activity,
         },
+        {
+          name: "Back To Home",
+          path: "/",
+          icon: Home,
+        },
       ];
     case "PATIENT":
       return [
@@ -120,6 +158,11 @@ const getNavLinks = (role) => {
           name: "My Prescriptions",
           path: "/patient/prescriptions",
           icon: FileText,
+        },
+        {
+          name: "Back To Home",
+          path: "/",
+          icon: Home,
         },
       ];
     default:
@@ -255,30 +298,6 @@ const Sidebar = () => {
           </AnimatePresence>
         </div>
 
-        {/* User Profile Section (only when authenticated) */}
-        {isAuthenticated && !isCollapsed && (
-          <div className="px-4 py-5 border-b border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-500 flex items-center justify-center">
-                  <span className="text-lg font-bold text-white">
-                    {user?.name?.charAt(0) || "U"}
-                  </span>
-                </div>
-                <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-white text-sm">
-                  {user?.name || "User"}
-                </p>
-                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">
-                  {role?.toLowerCase() || "user"}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Navigation */}
         <nav className="flex-1 w-full px-3 py-6 space-y-1 overflow-y-auto">
           <AnimatePresence>
@@ -338,10 +357,7 @@ const Sidebar = () => {
           {isAuthenticated ? (
             /* Authenticated Bottom Actions */
             <div className="space-y-2">
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors">
-                <Bell className="h-5 w-5" />
-                {!isCollapsed && <span className="text-sm">Notifications</span>}
-              </button>
+              <NotificationDropdown isCollapsed={isCollapsed} />
 
               <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-colors">
                 <HelpCircle className="h-5 w-5" />

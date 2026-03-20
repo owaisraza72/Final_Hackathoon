@@ -451,21 +451,35 @@ const HomePage = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Button
-                      size="lg"
-                      asChild
-                      className="bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/20 px-8 h-12 text-base rounded-full group"
+                    <Link
+                      to={getDashboardRoute()}
+                      className="inline-flex items-center gap-3 px-8 py-4 rounded-full text-white font-bold text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #00BBA7, #00968866)",
+                        boxShadow: "0 8px 32px rgba(0, 187, 167, 0.35)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow =
+                          "0 12px 40px rgba(0, 187, 167, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow =
+                          "0 8px 32px rgba(0, 187, 167, 0.35)";
+                      }}
                     >
-                      <Link to={getDashboardRoute()}>
-                        Go to Dashboard
-                        <motion.div
-                          animate={{ x: [0, 5, 0] }}
-                          transition={{ duration: 1, repeat: Infinity }}
-                        >
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </motion.div>
-                      </Link>
-                    </Button>
+                      Go to Dashboard
+                      <motion.span
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{
+                          duration: 1.2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        <ArrowRight className="h-5 w-5" />
+                      </motion.span>
+                    </Link>
                   </motion.div>
                 </motion.div>
               ) : (

@@ -7,6 +7,7 @@ import { appointmentApi } from "@/features/appointments/appointmentApi";
 import { prescriptionApi } from "@/features/prescriptions/prescriptionApi";
 import { diagnosisApi } from "@/features/diagnoses/diagnosisApi";
 import { aiApi } from "@/features/ai/aiApi";
+import { notificationApi } from "@/features/notifications/notificationApi";
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     [prescriptionApi.reducerPath]: prescriptionApi.reducer,
     [diagnosisApi.reducerPath]: diagnosisApi.reducer,
     [aiApi.reducerPath]: aiApi.reducer,
+    [notificationApi.reducerPath]: notificationApi.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -28,6 +30,7 @@ export const store = configureStore({
       prescriptionApi.middleware,
       diagnosisApi.middleware,
       aiApi.middleware,
+      notificationApi.middleware,
     ),
   devTools: import.meta.env.DEV,
 });

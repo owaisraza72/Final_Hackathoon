@@ -125,6 +125,41 @@ export const authApi = createApi({
         }
       },
     }),
+
+    // ── Update Profile ──
+    updateProfile: builder.mutation({
+      query: (body) => ({
+        url: "users/profile",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["User"],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if(data?.data?.user) {
+             dispatch(setCredentials(data.data.user));
+          }
+        } catch {
+          // handled by component
+        }
+      },
+    }),
+
+    // ── Change Password ──
+    changePassword: builder.mutation({
+      query: (body) => ({
+        url: "users/change-password",
+        method: "PATCH",
+        body,
+      }),
+    }),
+
+    // ── Get Doctor Analytics ──
+    getDoctorAnalytics: builder.query({
+      query: () => "users/doctor/analytics",
+      providesTags: ["User"],
+    }),
   }),
 });
 
@@ -133,4 +168,7 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useGetMeQuery,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
+  useGetDoctorAnalyticsQuery,
 } = authApi;

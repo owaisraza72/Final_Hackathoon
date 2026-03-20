@@ -1,9 +1,10 @@
-// services/appointment.service.js
 const AppointmentModel = require("../models/appointment.model");
 const Appointment = AppointmentModel;
 const APPOINTMENT_STATUS = AppointmentModel.APPOINTMENT_STATUS;
 const ApiError = require("../utils/ApiError");
 const { HTTP_STATUS, ROLES } = require("../constants");
+const notificationService = require("./notification.service");
+const Patient = require("../models/patient.model");
 
 class AppointmentService {
   /**
@@ -36,6 +37,16 @@ class AppointmentService {
       reason,
       status: APPOINTMENT_STATUS.PENDING,
     });
+
+    // Notify Doctor
+    const patient = await Patient.findById(patientId);
+    notificationService.createNotification({
+      recipient: doctorId,
+      title: "New Appointment Booked",
+      message: `A new appointment has been scheduled for patient ${patient?.name || "Unknown"} on ${new Date(date).toLocaleDateString()} at ${timeSlot}.`,
+      type: "APPOINTMENT",
+      relatedId: appointment._id,
+    }).catch(err => console.error("Notification failed:", err.message));
 
     return appointment;
   };
@@ -97,11 +108,22 @@ class AppointmentService {
       { $set: { status } },
       { new: true },
     )
-      .populate("patientId", "name")
+      .populate("patientId")
       .populate("doctorId", "name");
 
     if (!appointment) {
       throw new ApiError(HTTP_STATUS.NOT_FOUND, "Appointment not found");
+    }
+
+    // Notify Patient if linked to a user
+    if (appointment.patientId?.userId) {
+      notificationService.createNotification({
+        recipient: appointment.patientId.userId,
+        title: "Appointment Status Updated",
+        message: `Your appointment status with Dr. ${appointment.doctorId.name} has been updated to: ${status.toUpperCase()}.`,
+        type: "APPOINTMENT",
+        relatedId: appointment._id,
+      }).catch(err => console.error("Notification failed:", err.message));
     }
 
     return appointment;
@@ -115,10 +137,21 @@ class AppointmentService {
       appointmentId,
       { $set: { status: APPOINTMENT_STATUS.CANCELLED } },
       { new: true },
-    );
+    ).populate("patientId").populate("doctorId", "name");
 
     if (!appointment) {
       throw new ApiError(HTTP_STATUS.NOT_FOUND, "Appointment not found");
+    }
+
+    // Notify Patient if linked to user
+    if (appointment.patientId?.userId) {
+       notificationService.createNotification({
+        recipient: appointment.patientId.userId,
+        title: "Appointment Cancelled",
+        message: `Your appointment with Dr. ${appointment.doctorId.name} has been cancelled.`,
+        type: "APPOINTMENT",
+        relatedId: appointment._id,
+      }).catch(err => console.error("Notification failed:", err.message));
     }
 
     return appointment;

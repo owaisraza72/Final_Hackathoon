@@ -77,6 +77,11 @@ export const prescriptionApi = createApi({
       }),
       invalidatesTags: ["Prescription"],
     }),
+    listAllPrescriptions: builder.query({
+      query: () => "prescriptions",
+      providesTags: ["Prescription"],
+      transformResponse: (res) => res.data?.prescriptions || res.data,
+    }),
   }),
 });
 
@@ -88,4 +93,5 @@ export const {
   useLazyDownloadPDFQuery,
   useUpdatePrescriptionMutation,
   useDeletePrescriptionMutation,
+  useListAllPrescriptionsQuery,
 } = prescriptionApi;

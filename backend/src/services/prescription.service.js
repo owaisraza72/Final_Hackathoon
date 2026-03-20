@@ -39,6 +39,21 @@ class PrescriptionService {
       followUpDate,
     });
 
+    // Notify Patient if linked to a user
+    const patient = await Patient.findById(patientId);
+    if (patient?.userId) {
+      const doctor = await require("../models/user.model").findById(doctorId);
+      require("./notification.service")
+        .createNotification({
+          recipient: patient.userId,
+          title: "New Prescription Issued",
+          message: `Dr. ${doctor?.name || "Practitioner"} has issued a new medical directive for you.`,
+          type: "PRESCRIPTION",
+          relatedId: prescription._id,
+        })
+        .catch((err) => console.error("Notification failed:", err.message));
+    }
+
     // Generate AI explanation asynchronously if Admin is PRO
     if (subscriptionPlan === PLANS.PRO) {
       aiService
@@ -293,6 +308,18 @@ class PrescriptionService {
     }
 
     return prescription;
+  };
+
+  /**
+   * Get all prescriptions (Global Admin list)
+   */
+  getAllPrescriptions = async () => {
+    const prescriptions = await Prescription.find({})
+      .populate("patientId", "name age gender contact")
+      .populate("doctorId", "name email")
+      .sort({ createdAt: -1 });
+
+    return prescriptions;
   };
 }
 

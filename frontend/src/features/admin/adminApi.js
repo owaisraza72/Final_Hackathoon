@@ -80,5 +80,4 @@ export const {
   useDeleteUserMutation,
   useGetAnalyticsQuery,
   useUpdateSettingsMutation,
-  useUpdateSubscriptionMutation
 } = adminApi;

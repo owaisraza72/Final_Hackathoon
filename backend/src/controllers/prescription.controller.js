@@ -145,6 +145,21 @@ class PrescriptionController {
       .status(HTTP_STATUS.OK)
       .json(new ApiResponse(HTTP_STATUS.OK, null, "Prescription deleted"));
   });
+
+  // ── GET /api/v1/prescriptions ──
+  listAllPrescriptions = asyncHandler(async (req, res) => {
+    const prescriptions = await prescriptionService.getAllPrescriptions();
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(
+        new ApiResponse(
+          HTTP_STATUS.OK,
+          { prescriptions },
+          "All prescriptions fetched successfully",
+        ),
+      );
+  });
 }
 
 module.exports = new PrescriptionController();

@@ -10,13 +10,54 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/ui/Modal";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  AlertCircle,
+  Search,
+  Filter,
+  ChevronDown,
+  RefreshCw,
+  Eye,
+  Mail,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Shield,
+  Award,
+  Sparkles,
+  Users,
+  UserPlus,
+  UserMinus,
+  UserCheck,
+  UserX,
+  UserSearch,
+  UserCircle,
+  Building2,
+  Briefcase,
+  Phone,
+  MessageCircle,
+  Headphones,
+  HelpCircle,
+  Info,
+  X,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Primary teal color from your palette
+const primaryTeal = "#00BBA7";
+const tealLight = "#E0F7F5";
+const tealHover = "#009688";
+const tealGlow = "rgba(0, 187, 167, 0.15)";
 
 const ManageReceptionists = () => {
   const {
     data: receptionists,
     isLoading,
     isError,
+    refetch,
   } = useListUsersQuery("RECEPTIONIST");
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
@@ -24,30 +65,82 @@ const ManageReceptionists = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedReceptionist, setSelectedReceptionist] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
+    phone: "",
+    department: "",
   });
+
+  // Filter receptionists
+  const filteredReceptionists = receptionists?.filter((r) => {
+    // Search filter
+    const matchesSearch =
+      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.phone || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Status filter
+    const matchesStatus = filterStatus === "all" || 
+      (filterStatus === "active" && r.isActive) ||
+      (filterStatus === "inactive" && !r.isActive);
+
+    return matchesSearch && matchesStatus;
+  }) || [];
 
   const columns = [
     {
-      header: "Name",
-      accessor: "name",
+      header: "Liaison",
       cell: (row) => (
-        <span className="font-medium text-slate-900">{row.name}</span>
+        <div className="flex items-center gap-3">
+          <div 
+            className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-bold text-lg"
+            style={{ backgroundColor: primaryTeal }}
+          >
+            {row.name?.charAt(0)?.toUpperCase()}
+          </div>
+          <div>
+            <p className="font-bold text-slate-800">{row.name}</p>
+            <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+              <Mail className="h-3 w-3" style={{ color: primaryTeal }} />
+              {row.email}
+            </p>
+          </div>
+        </div>
       ),
     },
-    { header: "Email", accessor: "email" },
+    {
+      header: "Contact",
+      cell: (row) => (
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4 text-slate-400" />
+          <span className="text-sm text-slate-600">{row.phone || "Not provided"}</span>
+        </div>
+      ),
+    },
     {
       header: "Status",
       cell: (row) => (
         <div className="flex items-center gap-2">
           <div
-            className={`h-2 w-2 rounded-full ${row.isActive ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"}`}
+            className={`h-2 w-2 rounded-full ${
+              row.isActive 
+                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" 
+                : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+            }`}
           />
           <span
-            className={`text-[10px] font-black uppercase tracking-widest ${row.isActive ? "text-emerald-600" : "text-red-600"}`}
+            className={`text-[10px] font-bold uppercase tracking-wider ${
+              row.isActive ? "text-emerald-600" : "text-red-600"
+            }`}
           >
             {row.isActive ? "Active" : "On Hold"}
           </span>
@@ -57,33 +150,67 @@ const ManageReceptionists = () => {
     {
       header: "Joined",
       cell: (row) => (
-        <span className="text-slate-500 font-bold text-xs">
-          {new Date(row.createdAt).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </span>
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-slate-400" />
+          <span className="text-sm text-slate-600">
+            {new Date(row.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </span>
+        </div>
       ),
     },
     {
-      header: "Management",
+      header: "Actions",
       cell: (row) => (
-        <div className="flex items-center gap-1.5">
-          <button
+        <div className="flex items-center gap-1">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setSelectedReceptionist(row);
+              setShowDetailsModal(true);
+            }}
+            className="p-2 rounded-lg transition-all"
+            style={{ hoverBackground: tealLight }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = tealLight;
+              e.currentTarget.style.color = primaryTeal;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#64748b';
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => handleEdit(row)}
-            className="h-9 w-9 flex items-center justify-center text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all duration-300"
-            title="Edit Identity"
+            className="p-2 rounded-lg transition-all"
+            style={{ hoverBackground: tealLight }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = tealLight;
+              e.currentTarget.style.color = primaryTeal;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#64748b';
+            }}
           >
             <Edit2 className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => handleDelete(row._id)}
-            className="h-9 w-9 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300"
-            title="Revoke Access"
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleDeleteClick(row._id)}
+            className="p-2 rounded-lg transition-all hover:bg-red-50 hover:text-red-500"
           >
             <Trash2 className="h-4 w-4" />
-          </button>
+          </motion.button>
         </div>
       ),
     },
@@ -91,21 +218,35 @@ const ManageReceptionists = () => {
 
   const handleEdit = (user) => {
     setSelectedUser(user);
-    setFormData({ name: user.name, email: user.email, password: "" });
+    setFormData({ 
+      name: user.name, 
+      email: user.email, 
+      password: "",
+      phone: user.phone || "",
+      department: user.department || "",
+    });
     setIsEditMode(true);
     setModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (
-      window.confirm("Are you sure you want to deactivate this receptionist?")
-    ) {
-      try {
-        await deleteUser(id).unwrap();
-        toast.success("Receptionist deactivated successfully");
-      } catch (err) {
-        toast.error("Failed to deactivate receptionist");
-      }
+  const handleDeleteClick = (id) => {
+    setDeletingId(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteUser(deletingId).unwrap();
+      toast.success("Receptionist deactivated successfully", {
+        icon: "✅",
+        description: "Record updated",
+      });
+      setShowDeleteModal(false);
+      setDeletingId(null);
+    } catch (err) {
+      toast.error("Failed to deactivate receptionist", {
+        icon: "❌",
+      });
     }
   };
 
@@ -114,77 +255,381 @@ const ManageReceptionists = () => {
     try {
       if (isEditMode) {
         await updateUser({ id: selectedUser._id, data: formData }).unwrap();
-        toast.success("Receptionist updated successfully");
+        toast.success("Receptionist updated successfully", {
+          icon: "✅",
+          description: "Liaison record modified",
+        });
       } else {
         await createUser({ ...formData, role: "RECEPTIONIST" }).unwrap();
-        toast.success("Receptionist added successfully");
+        toast.success("Receptionist added successfully", {
+          icon: "✅",
+          description: "New liaison onboarded",
+        });
       }
       setModalOpen(false);
       setIsEditMode(false);
       setSelectedUser(null);
-      setFormData({ name: "", email: "", password: "" });
+      setFormData({ name: "", email: "", password: "", phone: "", department: "" });
     } catch (err) {
       toast.error(
         err?.data?.message ||
           `Failed to ${isEditMode ? "update" : "add"} receptionist`,
+        {
+          icon: "❌",
+        }
       );
     }
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const clearFilters = () => {
+    setSearchTerm("");
+    setFilterStatus("all");
+  };
 
-  const filteredData = receptionists?.filter(
-    (r) =>
-      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 24 },
+    },
+  };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
-        <PageHeader
-          title="Front Desk Personnel"
-          description="Maintain and oversee the core operational staff at your clinical reception nodes."
-        />
-        <button
-          onClick={() => {
-            setIsEditMode(false);
-            setModalOpen(true);
-            setFormData({ name: "", email: "", password: "" });
-          }}
-          className="h-14 px-8 bg-slate-900 border-b-4 border-black hover:bg-indigo-600 hover:border-indigo-800 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-[20px] transition-all duration-300 shadow-2xl flex items-center justify-center gap-4 active:scale-95 group"
-        >
-          <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
-          Onboard Liaison
-        </button>
-      </div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-7xl mx-auto space-y-8 pb-10 px-4 sm:px-6"
+    >
+      {/* Header Section */}
+      <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div 
+              className="h-10 w-10 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: primaryTeal }}
+            >
+              <Users className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-800">
+              Front Desk<span style={{ color: primaryTeal }}>Personnel</span>
+            </h1>
+          </div>
+          <p className="text-slate-500 flex items-center gap-2 ml-1">
+            <Headphones className="h-4 w-4" style={{ color: primaryTeal }} />
+            Maintain and oversee core operational staff at reception nodes
+          </p>
+        </div>
 
-      {isLoading ? (
-        <div className="flex h-[40vh] justify-center items-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin" />
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => refetch()}
+            className="h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors"
+          >
+            <RefreshCw className="h-4 w-4 text-slate-600" />
+          </button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setIsEditMode(false);
+              setModalOpen(true);
+              setFormData({ name: "", email: "", password: "", phone: "", department: "" });
+            }}
+            className="h-10 px-5 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg"
+            style={{ 
+              background: primaryTeal,
+              boxShadow: `0 4px 6px ${tealGlow}`
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = tealHover}
+            onMouseLeave={(e) => e.currentTarget.style.background = primaryTeal}
+          >
+            <UserPlus className="h-4 w-4" />
+            Onboard Liaison
+          </motion.button>
+        </div>
+      </motion.div>
+
+      {/* Search and Filter Bar */}
+      <motion.div variants={itemVariants} className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="h-10 px-4 bg-slate-100 rounded-xl text-sm font-medium flex items-center gap-2 transition-all"
+              style={{ hoverBackground: tealLight, hoverColor: primaryTeal }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = tealLight;
+                e.currentTarget.style.color = primaryTeal;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f1f5f9';
+                e.currentTarget.style.color = '#475569';
+              }}
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+            </button>
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: primaryTeal }} />
+              <input
+                type="text"
+                placeholder="Search by name, email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-10 pl-10 pr-4 rounded-xl border border-slate-200 text-sm outline-none w-64 transition-all"
+                style={{ 
+                  focusBorderColor: primaryTeal, 
+                  focusRing: `0 0 0 3px ${tealGlow}` 
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = primaryTeal;
+                  e.currentTarget.style.boxShadow = `0 0 0 3px ${tealGlow}`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              />
+            </div>
+
+            {(searchTerm || filterStatus !== "all") && (
+              <button
+                onClick={clearFilters}
+                className="text-xs font-medium transition-colors"
+                style={{ color: primaryTeal, hoverColor: tealHover }}
+                onMouseEnter={(e) => e.currentTarget.style.color = tealHover}
+                onMouseLeave={(e) => e.currentTarget.style.color = primaryTeal}
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Expanded Filters */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex gap-4 pt-4 mt-4 border-t border-slate-100">
+                <div className="w-48">
+                  <label className="text-[10px] font-bold uppercase text-slate-500 mb-2 block">
+                    Status
+                  </label>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-sm outline-none transition-all"
+                    style={{ 
+                      focusBorderColor: primaryTeal, 
+                      focusRing: `0 0 0 3px ${tealGlow}` 
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = primaryTeal;
+                      e.currentTarget.style.boxShadow = `0 0 0 3px ${tealGlow}`;
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <option value="all">All Liaisons</option>
+                    <option value="active">Active Only</option>
+                    <option value="inactive">On Hold</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Stats Summary */}
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: "Total Staff", value: receptionists?.length || 0, icon: Users },
+          { label: "Active", value: receptionists?.filter(r => r.isActive).length || 0, icon: UserCheck },
+          { label: "On Hold", value: receptionists?.filter(r => !r.isActive).length || 0, icon: UserX },
+          { label: "Departments", value: new Set(receptionists?.map(r => r.department).filter(Boolean)).size || 1, icon: Building2 },
+        ].map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">{stat.label}</p>
+                  <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                </div>
+                <div className="h-10 w-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: tealLight }}>
+                  <Icon className="h-5 w-5" style={{ color: primaryTeal }} />
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
+      {/* Receptionists Table */}
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
+        {isLoading ? (
+          <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+            <div className="relative">
+              <div 
+                className="h-16 w-16 border-4 rounded-full animate-spin"
+                style={{ borderColor: `${primaryTeal}20`, borderTopColor: primaryTeal }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Users className="h-6 w-6 animate-pulse" style={{ color: primaryTeal }} />
+              </div>
+            </div>
+            <p className="text-xs font-black uppercase text-slate-400 tracking-widest animate-pulse">
               Accessing Support Records...
             </p>
           </div>
-        </div>
-      ) : isError ? (
-        <div className="p-10 bg-red-50/50 border border-red-100 rounded-[32px] text-center">
-          <AlertCircle className="h-10 w-10 text-red-400 mx-auto mb-4" />
-          <p className="text-red-600 font-bold tracking-tight">
-            Access Protocol Failure: Operations records unreachable.
-          </p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-[40px] premium-shadow border border-slate-100/60 overflow-hidden">
+        ) : isError ? (
+          <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+            <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center">
+              <AlertCircle className="h-8 w-8 text-red-400" />
+            </div>
+            <p className="text-sm font-bold text-red-400">Access Protocol Failure</p>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
           <DataTable
             columns={columns}
-            data={filteredData || []}
-            onSearch={setSearchTerm}
-            placeholder="Search by liaison identity..."
+            data={filteredReceptionists}
+            placeholder="No liaison records found..."
           />
-        </div>
-      )}
+        )}
+      </motion.div>
+
+      {/* Details Modal */}
+      <AnimatePresence>
+        {showDetailsModal && selectedReceptionist && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowDetailsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-800">Liaison Details</h3>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <X className="h-5 w-5 text-slate-500" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Receptionist Info */}
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="h-16 w-16 rounded-xl flex items-center justify-center text-white font-bold text-2xl"
+                    style={{ backgroundColor: primaryTeal }}
+                  >
+                    {selectedReceptionist.name?.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-800">{selectedReceptionist.name}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Mail className="h-4 w-4" style={{ color: primaryTeal }} />
+                      <span className="text-sm text-slate-600">{selectedReceptionist.email}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs text-slate-500 mb-1">Phone</p>
+                    <p className="font-bold text-slate-800">{selectedReceptionist.phone || "Not provided"}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs text-slate-500 mb-1">Department</p>
+                    <p className="font-bold text-slate-800">{selectedReceptionist.department || "Front Desk"}</p>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <span className="text-sm text-slate-600">Status</span>
+                  <div className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${
+                    selectedReceptionist.isActive 
+                      ? "bg-emerald-50 border-emerald-200" 
+                      : "bg-red-50 border-red-200"
+                  }`}>
+                    <div className={`h-2 w-2 rounded-full ${
+                      selectedReceptionist.isActive ? "bg-emerald-500" : "bg-red-500"
+                    }`} />
+                    <span className={`text-sm font-bold ${
+                      selectedReceptionist.isActive ? "text-emerald-700" : "text-red-700"
+                    }`}>
+                      {selectedReceptionist.isActive ? "Active" : "On Hold"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Joined Date */}
+                <div className="p-4 bg-slate-50 rounded-lg">
+                  <p className="text-xs text-slate-500 mb-2">Joined</p>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" style={{ color: primaryTeal }} />
+                    <span className="text-sm font-bold text-slate-800">
+                      {new Date(selectedReceptionist.createdAt).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add/Edit Modal */}
       <Modal
@@ -193,92 +638,188 @@ const ManageReceptionists = () => {
           setModalOpen(false);
           setIsEditMode(false);
         }}
-        title={isEditMode ? "Modify Liaison Record" : "New Liaison Induction"}
+        title={isEditMode ? "Edit Liaison" : "Add New Liaison"}
       >
-        <form onSubmit={handleSubmit} className="space-y-8 pt-4">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                Liaison Signature Name
-              </label>
-              <input
-                required
-                type="text"
-                placeholder="e.g. Elena Sterling"
-                className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">
+              Full Name
+            </label>
+            <input
+              required
+              type="text"
+              placeholder="e.g. Elena Sterling"
+              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none transition-all"
+              style={{ 
+                focusBorderColor: primaryTeal, 
+                focusRing: `0 0 0 3px ${tealGlow}` 
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = primaryTeal;
+                e.currentTarget.style.boxShadow = `0 0 0 3px ${tealGlow}`;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                Operational Link (Email)
-              </label>
-              <input
-                required
-                type="email"
-                placeholder="liaison@clinicos.pro"
-                className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-              />
-            </div>
+          <div>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">
+              Email
+            </label>
+            <input
+              required
+              type="email"
+              placeholder="liaison@clinicos.pro"
+              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none transition-all"
+              style={{ 
+                focusBorderColor: primaryTeal, 
+                focusRing: `0 0 0 3px ${tealGlow}` 
+              }}
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                {isEditMode
-                  ? "New Access Key (Optional)"
-                  : "Initial Access Key"}
-              </label>
-              <input
-                required={!isEditMode}
-                type="password"
-                placeholder="••••••••••••"
-                className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
-              <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                Security Protocol: 8+ Characters required
-              </p>
-            </div>
+          <div>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">
+              Phone (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="+1 (555) 123-4567"
+              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none transition-all"
+              style={{ 
+                focusBorderColor: primaryTeal, 
+                focusRing: `0 0 0 3px ${tealGlow}` 
+              }}
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">
+              Department (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="Front Desk, Reception, etc."
+              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none transition-all"
+              style={{ 
+                focusBorderColor: primaryTeal, 
+                focusRing: `0 0 0 3px ${tealGlow}` 
+              }}
+              value={formData.department}
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">
+              {isEditMode ? "New Password (Optional)" : "Password"}
+            </label>
+            <input
+              required={!isEditMode}
+              type="password"
+              placeholder="••••••••"
+              className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm outline-none transition-all"
+              style={{ 
+                focusBorderColor: primaryTeal, 
+                focusRing: `0 0 0 3px ${tealGlow}` 
+              }}
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            />
+            <p className="text-[10px] text-slate-400 mt-1">Minimum 8 characters</p>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="h-12 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
             >
-              Abort Protocol
+              Cancel
             </button>
             <button
               type="submit"
               disabled={isCreating || isUpdating}
-              className="h-14 px-10 bg-slate-900 hover:bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50"
+              className="px-5 py-2 text-white text-sm font-bold rounded-lg transition-all flex items-center gap-2"
+              style={{ 
+                background: primaryTeal,
+                boxShadow: `0 4px 6px ${tealGlow}`,
+                opacity: isCreating || isUpdating ? 0.7 : 1,
+              }}
+              onMouseEnter={(e) => !isCreating && !isUpdating && (e.currentTarget.style.background = tealHover)}
+              onMouseLeave={(e) => !isCreating && !isUpdating && (e.currentTarget.style.background = primaryTeal)}
             >
               {isCreating || isUpdating ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Syncing Data...
-                </div>
-              ) : isEditMode ? (
-                "Confirm Modification"
+                <>
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  {isEditMode ? "Updating..." : "Adding..."}
+                </>
               ) : (
-                "Execute Induction"
+                isEditMode ? "Update Liaison" : "Add Liaison"
               )}
             </button>
           </div>
         </form>
       </Modal>
-    </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl max-w-md w-full shadow-2xl"
+            >
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
+                    <AlertCircle className="h-6 w-6 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-800">Deactivate Liaison</h3>
+                </div>
+
+                <p className="text-sm text-slate-600 mb-6">
+                  Are you sure you want to deactivate this receptionist? They will no longer have access to the system.
+                </p>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="flex-1 py-3 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-colors"
+                  >
+                    Deactivate
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

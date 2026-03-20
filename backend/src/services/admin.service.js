@@ -73,7 +73,7 @@ class AdminService {
   };
 
   /**
-   * Deactivate User
+   * Hard Delete User (permanently removes from database)
    */
   deleteUser = async (id) => {
     const userToDelete = await User.findById(id);
@@ -81,13 +81,9 @@ class AdminService {
       throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
     }
 
-    const user = await User.findByIdAndUpdate(
-      id,
-      { $set: { isActive: false } },
-      { new: true },
-    );
+    await User.findByIdAndDelete(id);
 
-    return { message: "User deactivated successfully", userId: user._id };
+    return { message: "User permanently deleted", userId: id };
   };
 
   /**

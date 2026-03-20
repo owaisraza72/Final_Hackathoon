@@ -14,6 +14,11 @@ const updateProfileSchema = z.object({
     .email("Please provide a valid email")
     .toLowerCase()
     .optional(),
+    
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  department: z.string().optional(),
+  avatar: z.string().optional(),
 });
 
 const changePasswordSchema = z

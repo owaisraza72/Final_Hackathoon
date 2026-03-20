@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    role: {
+  role: {
       type: String,
       enum: Object.values(ROLES),
       default: ROLES.PATIENT,
@@ -41,6 +41,26 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(PLANS),
       default: PLANS.FREE,
+    },
+
+    avatar: {
+      type: String,
+      default: "",
+    },
+
+    phone: {
+      type: String,
+      default: "",
+    },
+
+    address: {
+      type: String,
+      default: "",
+    },
+
+    department: {
+      type: String,
+      default: "",
     },
 
     refreshToken: {

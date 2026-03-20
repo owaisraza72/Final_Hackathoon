@@ -34,6 +34,7 @@ class PatientController {
       search,
       page,
       limit,
+      user: req.user,
     });
 
     res

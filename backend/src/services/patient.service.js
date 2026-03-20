@@ -139,7 +139,7 @@ class PatientService {
   // ─────────────────────────
   // List patients
   // ─────────────────────────
-  listPatients = async ({ search = "", page = 1, limit = 20 } = {}) => {
+  listPatients = async ({ search = "", page = 1, limit = 20, user = null } = {}) => {
     const query = { isActive: true };
 
     if (search) {
@@ -147,6 +147,22 @@ class PatientService {
         { name: { $regex: search, $options: "i" } },
         { contact: { $regex: search, $options: "i" } },
       ];
+    }
+
+    // ── DOCTOR SPECIFIC FILTERING ──
+    if (user && user.role === ROLES.DOCTOR) {
+      // Find all patient IDs from Appointments matching this doctor
+      const appointments = await Appointment.find({ doctorId: user._id }).select("patientId").lean();
+      // Find all patient IDs from Prescriptions matching this doctor
+      const prescriptions = await Prescription.find({ doctorId: user._id }).select("patientId").lean();
+
+      // Get unique patient IDs
+      const patientIds = new Set();
+      appointments.forEach(a => patientIds.add(String(a.patientId)));
+      prescriptions.forEach(p => patientIds.add(String(p.patientId)));
+
+      // Add to query
+      query._id = { $in: Array.from(patientIds) };
     }
 
     const pageNum = Math.max(1, Number(page) || 1);

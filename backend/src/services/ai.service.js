@@ -15,16 +15,20 @@ class AIService {
    * Initialize Gemini Model
    */
   _init() {
-    if (!process.env.GEMINI_API_KEY) {
-      console.warn(
-        "⚠️ GEMINI_API_KEY is missing in env. AI features will fallback.",
-      );
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn("⚠️ GEMINI_API_KEY is missing in env. AI features will fallback.");
       return false;
     }
 
     if (!this.genAI) {
-      this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+        }
+      });
     }
     return true;
   }
@@ -36,42 +40,43 @@ class AIService {
     const isReady = this._init();
 
     if (!isReady) {
-      return this._getFallbackResponse(
-        "AI initialization failed. API key missing.",
-      );
+      return this._getFallbackResponse("AI initialization failed. API key missing.");
     }
 
     try {
       const prompt = `
-        You are an advanced medical assistant AI. A doctor is providing the following patient details:
-        Patient Age: ${patientAge}
-        Patient Gender: ${patientGender}
-        Symptoms: ${symptoms.join(", ")}
-        Additional Notes: ${notes || "None"}
+        You are a senior medical consultant AI assistant. A clinical case is presented with the following details:
+        - Patient context: ${patientAge} year old ${patientGender}
+        - Presenting symptoms: ${symptoms.join(", ")}
+        - Clinical notes: ${notes || "None provided"}
 
-        Based on these symptoms, provide a structured response in JSON format (strictly JSON):
+        Analyze this case and provide a structured clinical insight in JSON format according to this schema:
         {
-          "possibleConditions": ["list of 3-4 likely conditions"],
-          "recommendations": ["list of 3 key next steps or tests"],
+          "possibleConditions": ["list of 3-4 likely differential diagnoses"],
+          "recommendations": ["list of 3 key next steps, tests, or immediate actions"],
           "riskLevel": "low" | "medium" | "high" | "critical",
-          "explanation": "a concise 2-3 sentence medical reasoning",
-          "disclaimer": "strictly for doctor's assistance only"
+          "explanation": "A professional, concise clinical reasoning (2-3 sentences)",
+          "disclaimer": "This is an AI-generated clinical assistance tool. Final diagnosis MUST be made by a licensed physician."
         }
-        Do not include any conversational text before or after the JSON.
       `;
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
 
-      // Clean and parse JSON
-      const jsonStr = text.replace(/```json|```/g, "").trim();
-      return JSON.parse(jsonStr);
+      // Better JSON extraction in case Gemini wraps it in text
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("No valid JSON found in AI response");
+      }
+      
+      return JSON.parse(jsonMatch[0]);
     } catch (error) {
-      console.error("Gemini AI API Error:", error.message);
-      return this._getFallbackResponse(
-        "AI Service currently unavailable. Please use manual diagnosis.",
-      );
+      console.error("❌ Gemini AI API Refusal or Error:", error.message);
+      if (error.message.includes("SAFETY")) {
+        return this._getFallbackResponse("Safety filters triggered. Please describe symptoms clinically.");
+      }
+      return this._getFallbackResponse(`AI Service Error: ${error.message}`);
     }
   };
 

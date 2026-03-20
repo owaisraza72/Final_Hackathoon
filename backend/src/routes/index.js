@@ -21,6 +21,7 @@ const appointmentRoutes = require("./appointment.routes");
 const prescriptionRoutes = require("./prescription.routes");
 const diagnosisRoutes = require("./diagnosis.routes");
 const aiRoutes = require("./ai.routes");
+const notificationRoutes = require("./notification.routes");
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use("/appointments", appointmentRoutes);
 router.use("/prescriptions", prescriptionRoutes);
 router.use("/diagnoses", diagnosisRoutes);
 router.use("/ai", aiRoutes);
+router.use("/notifications", notificationRoutes);
 
 module.exports = router;

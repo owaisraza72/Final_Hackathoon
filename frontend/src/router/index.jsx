@@ -20,6 +20,9 @@ import NotFoundPage from "@/pages/NotFoundPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import ManageDoctors from "@/pages/admin/ManageDoctors";
 import ManageReceptionists from "@/pages/admin/ManageReceptionists";
+import ManagePatients from "@/pages/admin/ManagePatients";
+import ManageAppointments from "@/pages/admin/ManageAppointments";
+import ManagePrescriptions from "@/pages/admin/ManagePrescriptions";
 import SubscriptionPage from "@/pages/admin/SubscriptionPage";
 
 // Doctor Dashboards
@@ -41,6 +44,9 @@ import DailySchedule from "@/pages/receptionist/DailySchedule";
 import PatientDashboard from "@/pages/patient/PatientDashboard";
 import MyPrescriptions from "@/pages/patient/MyPrescriptions";
 import AppointmentHistory from "@/pages/patient/AppointmentHistory";
+
+// Shared Pages
+import ProfilePage from "@/pages/ProfilePage";
 
 const router = createBrowserRouter([
   // ── Public Pages & Auth ──
@@ -82,7 +88,11 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "doctors", element: <ManageDoctors /> },
       { path: "receptionists", element: <ManageReceptionists /> },
+      { path: "patients", element: <ManagePatients /> },
+      { path: "appointments", element: <ManageAppointments /> },
+      { path: "prescriptions", element: <ManagePrescriptions /> },
       { path: "subscription", element: <SubscriptionPage /> },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 
@@ -102,6 +112,7 @@ const router = createBrowserRouter([
       { path: "prescriptions/new", element: <WritePrescription /> },
       { path: "prescriptions/edit/:id", element: <WritePrescription /> },
       { path: "ai", element: <AIAssistant /> },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 
@@ -119,6 +130,7 @@ const router = createBrowserRouter([
       { path: "patients/new", element: <RegisterPatient /> },
       { path: "appointments/new", element: <BookAppointment /> },
       { path: "schedule", element: <DailySchedule /> },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 
@@ -134,6 +146,7 @@ const router = createBrowserRouter([
       { index: true, element: <PatientDashboard /> },
       { path: "prescriptions", element: <MyPrescriptions /> },
       { path: "appointments", element: <AppointmentHistory /> },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 

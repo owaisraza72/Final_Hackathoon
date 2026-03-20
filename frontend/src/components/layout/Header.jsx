@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  LogOut, 
-  User, 
-  Menu, 
-  X, 
-  Home, 
-  Code2, 
+import {
+  LogOut,
+  User,
+  Menu,
+  X,
+  Home,
+  Code2,
   Settings,
   HeartPulse,
   ChevronDown,
@@ -16,7 +16,8 @@ import {
   Shield,
   Moon,
   Sun,
-  LogIn
+  LogIn,
+  LayoutDashboard
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState(3);
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState("light");
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
@@ -41,8 +42,8 @@ const Header = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Handle click outside for user menu
@@ -52,19 +53,19 @@ const Header = () => {
         setUserMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [mobileOpen]);
 
@@ -87,33 +88,59 @@ const Header = () => {
   };
 
   const navLinks = [
-    { label: "Home", path: ROUTES.HOME, icon: Home, color: "from-blue-500 to-cyan-500" },
-    { label: "About", path: ROUTES.ABOUT, icon: HeartPulse, color: "from-teal-500 to-emerald-500" },
-    { label: "Contact", path: ROUTES.CONTACT, icon: Stethoscope, color: "from-purple-500 to-pink-500" },
+    {
+      label: "Home",
+      path: ROUTES.HOME,
+      icon: Home,
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      label: "About",
+      path: ROUTES.ABOUT,
+      icon: HeartPulse,
+      color: "from-teal-500 to-emerald-500",
+    },
+    {
+      label: "Contact",
+      path: ROUTES.CONTACT,
+      icon: Stethoscope,
+      color: "from-purple-500 to-pink-500",
+    },
   ];
 
   const roleColors = {
-    ADMIN: "from-red-500 to-orange-500",
-    DOCTOR: "from-blue-500 to-cyan-500",
-    RECEPTIONIST: "from-purple-500 to-pink-500",
-    PATIENT: "from-green-500 to-emerald-500",
+    ADMIN: "from-teal-500 to-cyan-500",
+    DOCTOR: "from-teal-500 to-cyan-500",
+    RECEPTIONIST: "from-teal-500 to-cyan-500",
+    PATIENT: "from-teal-500 to-cyan-500",
   };
 
   const getRoleBadgeColor = (role) => {
     return roleColors[role] || "from-gray-500 to-gray-600";
   };
 
+  const getBasePath = () => (user?.role ? `/${user.role.toLowerCase()}` : "");
+
   const userMenuItems = [
-    { label: "Profile", icon: User, path: "/profile", color: "text-blue-500" },
-    { label: "Settings", icon: Settings, path: "/settings", color: "text-gray-500" },
-    { label: "Activity", icon: Activity, path: "/activity", color: "text-teal-500" },
+    {
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      path: getBasePath(),
+      color: "text-teal-500",
+    },
+    {
+      label: "Profile",
+      icon: User,
+      path: `${getBasePath()}/profile`,
+      color: "text-blue-500",
+    },
   ];
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
     // Here you would implement actual theme switching logic
-    toast.success(`${theme === 'light' ? 'Dark' : 'Light'} mode activated`, {
-      icon: theme === 'light' ? '🌙' : '☀️',
+    toast.success(`${theme === "light" ? "Dark" : "Light"} mode activated`, {
+      icon: theme === "light" ? "🌙" : "☀️",
     });
   };
 
@@ -124,8 +151,8 @@ const Header = () => {
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled 
-            ? "bg-white/95 backdrop-blur-xl border-b border-slate-200/50 shadow-lg" 
+          scrolled
+            ? "bg-white/95 backdrop-blur-xl border-b border-slate-200/50 shadow-lg"
             : "bg-white/80 backdrop-blur-sm border-b border-transparent"
         }`}
       >
@@ -142,9 +169,9 @@ const Header = () => {
               className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center overflow-hidden shadow-lg"
             >
               <motion.div
-                animate={{ 
+                animate={{
                   scale: [1, 1.2, 1],
-                  rotate: [0, 90, 0]
+                  rotate: [0, 90, 0],
                 }}
                 transition={{ duration: 5, repeat: Infinity }}
                 className="absolute inset-0 bg-gradient-to-tr from-white/30 to-transparent"
@@ -178,7 +205,7 @@ const Header = () => {
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-10 transition-opacity"
                       style={{
-                        background: `linear-gradient(to right, ${link.color.split(' ')[0]}, ${link.color.split(' ')[2]})`
+                        background: `linear-gradient(to right, ${link.color.split(" ")[0]}, ${link.color.split(" ")[2]})`,
                       }}
                     />
                     <div className="relative z-10 flex items-center gap-2">
@@ -200,7 +227,7 @@ const Header = () => {
               onClick={toggleTheme}
               className="p-2 rounded-xl hover:bg-slate-100 transition-colors"
             >
-              {theme === 'light' ? (
+              {theme === "light" ? (
                 <Moon className="h-5 w-5 text-slate-600" />
               ) : (
                 <Sun className="h-5 w-5 text-slate-600" />
@@ -243,22 +270,30 @@ const Header = () => {
                       transition={{ duration: 2, repeat: Infinity }}
                       className={`absolute inset-0 rounded-full bg-gradient-to-r ${getRoleBadgeColor(user?.role)} opacity-50 blur-sm`}
                     />
-                    <div className={`relative h-9 w-9 rounded-full bg-gradient-to-r ${getRoleBadgeColor(user?.role)} flex items-center justify-center shadow-lg`}>
+                    <div
+                      className={`relative h-9 w-9 rounded-full bg-gradient-to-r ${getRoleBadgeColor(user?.role)} flex items-center justify-center shadow-lg`}
+                    >
                       <span className="text-sm font-bold text-white">
-                        {user?.name?.charAt(0) || 'U'}
+                        {user?.name?.charAt(0) || "U"}
                       </span>
                     </div>
                   </div>
                   <div className="hidden lg:block text-left">
                     <p className="text-xs text-slate-500">Signed in as</p>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-800">{user?.name}</p>
-                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r ${getRoleBadgeColor(user?.role)} text-white uppercase tracking-wider`}>
+                      <p className="text-sm font-semibold text-slate-800">
+                        {user?.name}
+                      </p>
+                      <span
+                        className={`text-[8px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r ${getRoleBadgeColor(user?.role)} text-white uppercase tracking-wider`}
+                      >
                         {user?.role}
                       </span>
                     </div>
                   </div>
-                  <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${userMenuOpen ? "rotate-180" : ""}`}
+                  />
                 </motion.button>
 
                 {/* User Dropdown Menu */}
@@ -268,12 +303,18 @@ const Header = () => {
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 20,
+                      }}
                       className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden z-50"
                     >
                       {/* User header */}
                       <div className="p-4 bg-gradient-to-r from-teal-500 to-cyan-500">
-                        <p className="text-white text-sm font-medium">{user?.name}</p>
+                        <p className="text-white text-sm font-medium">
+                          {user?.name}
+                        </p>
                         <p className="text-teal-100 text-xs">{user?.email}</p>
                       </div>
 
@@ -293,14 +334,16 @@ const Header = () => {
                                 onClick={() => setUserMenuOpen(false)}
                               >
                                 <Icon className={`h-4 w-4 ${item.color}`} />
-                                <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                                <span className="text-sm font-medium text-slate-700">
+                                  {item.label}
+                                </span>
                               </Link>
                             </motion.div>
                           );
                         })}
-                        
+
                         <div className="my-2 h-px bg-slate-100" />
-                        
+
                         <motion.button
                           whileHover={{ x: 5 }}
                           whileTap={{ scale: 0.98 }}
@@ -327,10 +370,13 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     asChild
                     className="rounded-xl hover:bg-teal-50 hover:text-teal-600"
                   >
@@ -340,13 +386,19 @@ const Header = () => {
                     </Link>
                   </Button>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    size="sm" 
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    size="sm"
                     asChild
                     className="rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/20"
                   >
-                    <Link to={ROUTES.REGISTER} className="flex items-center gap-2">
+                    <Link
+                      to={ROUTES.REGISTER}
+                      className="flex items-center gap-2"
+                    >
                       <Sparkles className="h-4 w-4" />
                       Get Started
                     </Link>
@@ -401,13 +453,13 @@ const Header = () => {
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
               onClick={() => setMobileOpen(false)}
             />
-            
+
             {/* Menu Panel */}
             <motion.div
               ref={mobileMenuRef}
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed top-20 right-0 bottom-0 w-full max-w-sm bg-white/95 backdrop-blur-xl border-l border-slate-200 shadow-2xl z-40 md:hidden overflow-y-auto"
             >
@@ -421,7 +473,9 @@ const Header = () => {
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                        <span className="text-xl font-bold">{user?.name?.charAt(0)}</span>
+                        <span className="text-xl font-bold">
+                          {user?.name?.charAt(0)}
+                        </span>
                       </div>
                       <div>
                         <p className="font-semibold">{user?.name}</p>
@@ -429,10 +483,14 @@ const Header = () => {
                       </div>
                     </div>
                     <div className="mt-3 flex items-center gap-2">
-                      <span className={`text-[10px] font-black px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm uppercase tracking-wider`}>
+                      <span
+                        className={`text-[10px] font-black px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm uppercase tracking-wider`}
+                      >
                         {user?.role}
                       </span>
-                      <span className="text-xs text-teal-100">ID: #{user?.id?.slice(0, 8)}</span>
+                      <span className="text-xs text-teal-100">
+                        ID: #{user?.id?.slice(0, 8)}
+                      </span>
                     </div>
                   </motion.div>
                 )}
@@ -457,10 +515,14 @@ const Header = () => {
                           onClick={() => setMobileOpen(false)}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`h-8 w-8 rounded-lg bg-gradient-to-r ${link.color} flex items-center justify-center`}>
+                            <div
+                              className={`h-8 w-8 rounded-lg bg-gradient-to-r ${link.color} flex items-center justify-center`}
+                            >
                               <Icon className="h-4 w-4 text-white" />
                             </div>
-                            <span className="font-medium text-slate-700">{link.label}</span>
+                            <span className="font-medium text-slate-700">
+                              {link.label}
+                            </span>
                           </div>
                           <motion.div
                             whileHover={{ x: 5 }}
@@ -496,7 +558,9 @@ const Header = () => {
                               onClick={() => setMobileOpen(false)}
                             >
                               <Icon className={`h-5 w-5 ${item.color}`} />
-                              <span className="text-xs font-medium text-slate-600">{item.label}</span>
+                              <span className="text-xs font-medium text-slate-600">
+                                {item.label}
+                              </span>
                             </Link>
                           </motion.div>
                         );
@@ -515,7 +579,7 @@ const Header = () => {
                 >
                   <span className="font-medium text-slate-700">Theme</span>
                   <div className="flex items-center gap-2">
-                    {theme === 'light' ? (
+                    {theme === "light" ? (
                       <>
                         <Sun className="h-4 w-4 text-slate-500" />
                         <span className="text-sm text-slate-500">Light</span>
@@ -556,14 +620,27 @@ const Header = () => {
                     transition={{ delay: 0.4 }}
                     className="space-y-2"
                   >
-                    <Button variant="outline" className="w-full rounded-xl" asChild>
-                      <Link to={ROUTES.LOGIN} className="flex items-center justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl"
+                      asChild
+                    >
+                      <Link
+                        to={ROUTES.LOGIN}
+                        className="flex items-center justify-center gap-2"
+                      >
                         <LogIn className="h-4 w-4" />
                         Sign In
                       </Link>
                     </Button>
-                    <Button className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500" asChild>
-                      <Link to={ROUTES.REGISTER} className="flex items-center justify-center gap-2">
+                    <Button
+                      className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500"
+                      asChild
+                    >
+                      <Link
+                        to={ROUTES.REGISTER}
+                        className="flex items-center justify-center gap-2"
+                      >
                         <Sparkles className="h-4 w-4" />
                         Get Started
                       </Link>

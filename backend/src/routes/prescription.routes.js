@@ -27,6 +27,15 @@ router.use(authenticate);
 // All prescription routes need context of the Admin account
 router.use(attachAdmin);
 
+// ── Global Registry (Admin) ──
+// @route   GET /api/v1/prescriptions
+// @desc    Retrieve every prescription in the system (verifiable audit)
+router.get(
+  "/",
+  authorize(ROLES.ADMIN),
+  prescriptionController.listAllPrescriptions,
+);
+
 // ── Medical View ──
 // @route   GET /api/v1/prescriptions/patient/:id
 // @desc    Retrieve all past prescriptions for a specific patient
