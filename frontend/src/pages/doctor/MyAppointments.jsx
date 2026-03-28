@@ -11,9 +11,9 @@ import {
   Calendar,
   Clock,
   User,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
+  CircleCheckBig,
+  CircleX,
+  CircleAlert,
   Clock4,
   Search,
   Filter,
@@ -192,7 +192,7 @@ const MyAppointments = () => {
       case "confirmed":
         return {
           label: "Confirmed",
-          icon: CheckCircle2,
+          icon: CircleCheckBig,
           bg: "bg-blue-50",
           text: "text-blue-700",
           border: "border-blue-200",
@@ -210,7 +210,7 @@ const MyAppointments = () => {
       case "no_show":
         return {
           label: "No Show",
-          icon: XCircle,
+          icon: CircleX,
           bg: "bg-red-50",
           text: "text-red-700",
           border: "border-red-200",
@@ -228,7 +228,7 @@ const MyAppointments = () => {
       default:
         return {
           label: status,
-          icon: AlertCircle,
+          icon: CircleAlert,
           bg: "bg-slate-50",
           text: "text-slate-700",
           border: "border-slate-200",
@@ -776,9 +776,9 @@ const MyAppointments = () => {
                                   '#ef4444'
                     }}
                   >
-                    {selectedAppointment.status === 'completed' && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+                    {selectedAppointment.status === 'completed' && <CircleCheckBig className="h-4 w-4 text-emerald-600" />}
                     {selectedAppointment.status === 'pending' && <Clock className="h-4 w-4 text-amber-600" />}
-                    {selectedAppointment.status === 'no_show' && <XCircle className="h-4 w-4 text-red-600" />}
+                    {selectedAppointment.status === 'no_show' && <CircleX className="h-4 w-4 text-red-600" />}
                     <span className="text-sm font-bold capitalize">{selectedAppointment.status}</span>
                   </div>
                 </div>

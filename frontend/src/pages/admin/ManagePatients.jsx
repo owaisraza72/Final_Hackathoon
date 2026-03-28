@@ -16,20 +16,20 @@ import {
   Calendar,
   Activity,
   Trash2,
-  Edit3,
-  AlertCircle,
+  Pencil,
+  CircleAlert,
   Filter,
   Users,
   Shield,
   Fingerprint,
-  CheckCircle2,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   ChevronDown,
   Mail,
   MapPin,
   Syringe,
   Sparkles,
-  AlertTriangle,
+  TriangleAlert,
   Eye,
   RefreshCw,
   Clock,
@@ -73,7 +73,7 @@ import {
   Send,
   MessageCircle,
   MessageSquare,
-  HelpCircle,
+  CircleHelp,
   Headphones,
   Coffee,
   Sun,
@@ -341,7 +341,7 @@ const ManagePatients = () => {
                 : "bg-red-50 text-red-600 border-red-100"
             }`}
           >
-            {row.isActive ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+            {row.isActive ? <CircleCheckBig size={10} /> : <CircleX size={10} />}
             {row.isActive ? "Operational" : "Archived"}
           </div>
         </div>
@@ -366,7 +366,7 @@ const ManagePatients = () => {
             className="h-9 w-9 flex items-center justify-center bg-slate-50 text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-xl border border-slate-100 hover:border-teal-200 transition-all"
             style={{ hoverColor: primaryTeal }}
           >
-            <Edit3 size={16} />
+            <Pencil size={16} />
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -665,7 +665,7 @@ const ManagePatients = () => {
 
           <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <CircleAlert className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
               <p className="text-xs text-amber-700">
                 Archiving a patient suspends their portal access immediately.
               </p>
@@ -694,7 +694,7 @@ const ManagePatients = () => {
             ) : isError ? (
               <div className="h-[600px] flex flex-col items-center justify-center gap-4">
                 <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="h-8 w-8 text-red-400" />
+                  <TriangleAlert className="h-8 w-8 text-red-400" />
                 </div>
                 <p className="text-sm font-bold text-red-400">Sync Protocol Failure</p>
                 <button
@@ -927,7 +927,7 @@ const ManagePatients = () => {
       <Modal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Archive Patient">
         <div className="space-y-6">
           <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-200">
-            <AlertTriangle className="h-8 w-8 text-red-500" />
+            <TriangleAlert className="h-8 w-8 text-red-500" />
             <div>
               <p className="text-sm font-bold text-red-700 mb-1">
                 Are you sure you want to archive {selectedPatient?.name}?
@@ -959,7 +959,7 @@ const ManagePatients = () => {
       <Modal isOpen={isBulkDeleteModalOpen} onClose={() => setBulkDeleteModalOpen(false)} title="Archive Multiple Patients">
         <div className="space-y-6">
           <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-200">
-            <AlertTriangle className="h-8 w-8 text-red-500" />
+            <TriangleAlert className="h-8 w-8 text-red-500" />
             <div>
               <p className="text-sm font-bold text-red-700 mb-1">
                 Archive {selectedPatients.length} patients?

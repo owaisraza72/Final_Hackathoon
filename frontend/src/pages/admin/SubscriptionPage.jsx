@@ -6,7 +6,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import {
-  CheckCircle2,
+  CircleCheckBig,
   X,
   Zap,
   Shield,
@@ -25,9 +25,9 @@ import {
   Clock,
   ArrowRight,
   Check,
-  AlertCircle,
+  CircleAlert,
   Info,
-  HelpCircle,
+  CircleHelp,
   Rocket,
   Target,
   Globe,
@@ -415,7 +415,7 @@ const SubscriptionPage = () => {
                           }`}
                         >
                           {feature.included ? (
-                            <CheckCircle2
+                            <CircleCheckBig
                               className="h-5 w-5 shrink-0 mt-0.5"
                               style={{ color: primaryTeal }}
                             />
@@ -641,3 +641,4 @@ const SubscriptionPage = () => {
 };
 
 export default SubscriptionPage;
+

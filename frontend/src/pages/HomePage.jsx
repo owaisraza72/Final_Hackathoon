@@ -11,7 +11,7 @@ import {
   Activity,
   UserRound,
   ArrowRight,
-  CheckCircle2,
+  CircleCheckBig,
   HeartPulse,
   Microscope,
   Syringe,
@@ -772,7 +772,7 @@ const HomePage = () => {
                         whileHover={{ scale: 1.2, rotate: 360 }}
                         transition={{ type: "spring" }}
                       >
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                        <CircleCheckBig className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                       </motion.div>
                       <span>{item}</span>
                     </motion.li>
@@ -995,3 +995,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+

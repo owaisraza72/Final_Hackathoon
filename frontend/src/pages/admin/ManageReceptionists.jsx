@@ -12,9 +12,9 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import {
   Plus,
-  Edit2,
+  Pencil,
   Trash2,
-  AlertCircle,
+  CircleAlert,
   Search,
   Filter,
   ChevronDown,
@@ -23,8 +23,8 @@ import {
   Mail,
   Calendar,
   Clock,
-  CheckCircle2,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Shield,
   Award,
   Sparkles,
@@ -40,7 +40,7 @@ import {
   Phone,
   MessageCircle,
   Headphones,
-  HelpCircle,
+  CircleHelp,
   Info,
   X,
 } from "lucide-react";
@@ -201,7 +201,7 @@ const ManageReceptionists = () => {
               e.currentTarget.style.color = '#64748b';
             }}
           >
-            <Edit2 className="h-4 w-4" />
+            <Pencil className="h-4 w-4" />
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -515,7 +515,7 @@ const ManageReceptionists = () => {
         ) : isError ? (
           <div className="h-[400px] flex flex-col items-center justify-center gap-4">
             <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center">
-              <AlertCircle className="h-8 w-8 text-red-400" />
+              <CircleAlert className="h-8 w-8 text-red-400" />
             </div>
             <p className="text-sm font-bold text-red-400">Access Protocol Failure</p>
             <button
@@ -791,7 +791,7 @@ const ManageReceptionists = () => {
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
-                    <AlertCircle className="h-6 w-6 text-red-600" />
+                    <CircleAlert className="h-6 w-6 text-red-600" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-800">Deactivate Liaison</h3>
                 </div>

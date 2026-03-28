@@ -20,7 +20,7 @@ import {
   Stethoscope,
   Calendar,
   Clock,
-  AlertCircle,
+  CircleAlert,
   FileText,
   Save,
   X,
@@ -28,7 +28,7 @@ import {
   Sparkles,
   Shield,
   Info,
-  HelpCircle,
+  CircleHelp,
   CheckCheck,
   Edit,
   Copy,
@@ -441,7 +441,7 @@ const WritePrescription = () => {
                     </select>
                     {errors.patientId && (
                       <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                        <AlertCircle className="h-3 w-3" />
+                        <CircleAlert className="h-3 w-3" />
                         {errors.patientId.message}
                       </p>
                     )}
@@ -500,7 +500,7 @@ const WritePrescription = () => {
                     />
                     {errors.diagnosis && (
                       <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                        <AlertCircle className="h-3 w-3" />
+                        <CircleAlert className="h-3 w-3" />
                         {errors.diagnosis.message}
                       </p>
                     )}
@@ -551,7 +551,7 @@ const WritePrescription = () => {
                       onClick={() => setShowMedicineHelp(!showMedicineHelp)}
                       className="h-8 px-3 text-xs rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors flex items-center gap-1"
                     >
-                      <HelpCircle className="h-3 w-3" />
+                      <CircleHelp className="h-3 w-3" />
                       Templates
                     </button>
                     <button
@@ -730,7 +730,7 @@ const WritePrescription = () => {
 
                 {errors.medicines?.root && (
                   <p className="text-xs text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                    <CircleAlert className="h-3 w-3" />
                     {errors.medicines.root.message}
                   </p>
                 )}
@@ -886,7 +886,7 @@ const WritePrescription = () => {
             exit={{ opacity: 0, y: 50 }}
             className="fixed bottom-6 right-6 bg-amber-50 border border-amber-200 rounded-lg p-3 shadow-lg flex items-center gap-3"
           >
-            <AlertCircle className="h-5 w-5 text-amber-600" />
+            <CircleAlert className="h-5 w-5 text-amber-600" />
             <span className="text-sm text-amber-700">You have unsaved changes</span>
           </motion.div>
         )}

@@ -6,28 +6,38 @@ const env = require("../config/env.config");
 
 class AIService {
   constructor() {
-    // API KEY setting handles automatically in construction when called
     this.genAI = null;
-    this.model = null;
+    this.jsonModel = null;
+    this.textModel = null;
   }
 
   /**
-   * Initialize Gemini Model
+   * Initialize Gemini Models
    */
   _init() {
     const apiKey = process.env.GEMINI_API_KEY;
+    console.log(process.env.GEMINI_API_KEY);
     if (!apiKey) {
-      console.warn("⚠️ GEMINI_API_KEY is missing in env. AI features will fallback.");
+      console.warn(
+        "⚠️ GEMINI_API_KEY is missing in env. AI features will fallback.",
+      );
       return false;
     }
 
     if (!this.genAI) {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ 
+
+      // Model for Structured JSON output
+      this.jsonModel = this.genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
         generationConfig: {
           responseMimeType: "application/json",
-        }
+        },
+      });
+
+      // Model for Creative/Simple Text output
+      this.textModel = this.genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
       });
     }
     return true;
@@ -40,7 +50,9 @@ class AIService {
     const isReady = this._init();
 
     if (!isReady) {
-      return this._getFallbackResponse("AI initialization failed. API key missing.");
+      return this._getFallbackResponse(
+        "AI initialization failed. API key missing.",
+      );
     }
 
     try {
@@ -60,7 +72,7 @@ class AIService {
         }
       `;
 
-      const result = await this.model.generateContent(prompt);
+      const result = await this.jsonModel.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
 
@@ -69,12 +81,14 @@ class AIService {
       if (!jsonMatch) {
         throw new Error("No valid JSON found in AI response");
       }
-      
+
       return JSON.parse(jsonMatch[0]);
     } catch (error) {
       console.error("❌ Gemini AI API Refusal or Error:", error.message);
       if (error.message.includes("SAFETY")) {
-        return this._getFallbackResponse("Safety filters triggered. Please describe symptoms clinically.");
+        return this._getFallbackResponse(
+          "Safety filters triggered. Please describe symptoms clinically.",
+        );
       }
       return this._getFallbackResponse(`AI Service Error: ${error.message}`);
     }
@@ -84,9 +98,9 @@ class AIService {
    * Get AI Explanation for Prescriptions (Simple language for patients)
    */
   explainPrescription = async (prescriptionData) => {
-    this._init();
-    if (!this.model)
-      return { message: "AI Explanation currently unavailable." };
+    const isReady = this._init();
+    if (!isReady || !this.textModel)
+      return { explanation: "AI Explanation currently unavailable." };
 
     try {
       const prompt = `
@@ -95,18 +109,21 @@ class AIService {
         
         Diagnosis: ${prescriptionData.diagnosis}
         Medicines: ${prescriptionData.medicines.map((m) => `${m.name} (${m.dosage}) - ${m.frequency}`).join(", ")}
-        Instructions: ${prescriptionData.instructions}
+        Instructions: ${prescriptionData.instructions || "Follow as directed."}
 
-        Provide a friendly, 3-paragraph summary. No JSON needed here.
+        Provide a friendly, 3-paragraph summary. Use simple English or Urdu/Hindi terms if helpful. No JSON needed.
       `;
 
-      const result = await this.model.generateContent(prompt);
+      const result = await this.textModel.generateContent(prompt);
       const response = await result.response;
       return { explanation: response.text() };
     } catch (error) {
+      console.error("❌ Gemini Explain Prescription Error:", error.message);
       return {
         explanation:
-          "Unable to generate explanation right now. Please follow doctor's instructions strictly.",
+          "Unable to generate explanation right now. Please follow doctor's instructions strictly. (Error: " +
+          error.message +
+          ")",
       };
     }
   };

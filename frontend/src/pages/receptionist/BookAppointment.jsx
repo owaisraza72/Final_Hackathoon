@@ -15,9 +15,9 @@ import {
   Clock,
   Calendar,
   FileText,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
+  CircleAlert,
+  CircleCheckBig,
+  CircleX,
   Loader2,
   Phone,
   Mail,
@@ -99,7 +99,7 @@ const appointmentTypes = [
   {
     value: "emergency",
     label: "Emergency",
-    icon: AlertCircle,
+    icon: CircleAlert,
     color: "from-red-500 to-rose-500",
   },
   {
@@ -185,7 +185,7 @@ const BookAppointment = () => {
     { number: 1, title: "Select Patient", icon: User },
     { number: 2, title: "Choose Doctor", icon: Stethoscope },
     { number: 3, title: "Pick Time", icon: Clock },
-    { number: 4, title: "Confirm", icon: CheckCircle2 },
+    { number: 4, title: "Confirm", icon: CircleCheckBig },
   ];
 
   const containerVariants = {
@@ -222,7 +222,7 @@ const BookAppointment = () => {
       >
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-indigo-500 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
               <CalendarCheck className="h-5 w-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800">
@@ -250,9 +250,9 @@ const BookAppointment = () => {
               Scheduling Active
             </span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-200">
-            <Zap className="h-4 w-4 text-indigo-500" />
-            <span className="text-xs font-bold text-indigo-700">
+          <div className="flex items-center gap-2 px-4 py-2 bg-cyan-50 rounded-xl border border-cyan-200">
+            <Zap className="h-4 w-4 text-cyan-500" />
+            <span className="text-xs font-bold text-cyan-700">
               {timeSlots.filter((s) => s.available).length} Slots Available
             </span>
           </div>
@@ -285,12 +285,12 @@ const BookAppointment = () => {
                     isCompleted
                       ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white"
                       : isActive
-                        ? "bg-gradient-to-r from-teal-500 to-indigo-500 text-white shadow-lg shadow-teal-500/30"
+                        ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30"
                         : "bg-slate-100 text-slate-400"
                   }`}
                 >
                   {isCompleted ? (
-                    <CheckCircle2 className="h-5 w-5" />
+                    <CircleCheckBig className="h-5 w-5" />
                   ) : (
                     <Icon className="h-5 w-5" />
                   )}
@@ -300,7 +300,7 @@ const BookAppointment = () => {
                 <div
                   className={`flex-1 h-1 mx-2 rounded ${
                     s.number < step
-                      ? "bg-gradient-to-r from-teal-500 to-indigo-500"
+                      ? "bg-gradient-to-r from-teal-500 to-cyan-500"
                       : "bg-slate-200"
                   }`}
                 />
@@ -314,7 +314,7 @@ const BookAppointment = () => {
       <div className="grid lg:grid-cols-4 gap-8">
         {/* Patient Info Sidebar */}
         <motion.div variants={itemVariants} className="lg:col-span-1 space-y-6">
-          <div className="bg-gradient-to-br from-teal-600 to-indigo-600 rounded-3xl p-6 text-white shadow-xl overflow-hidden relative">
+          <div className="bg-gradient-to-br from-teal-600 to-cyan-600 rounded-3xl p-6 text-white shadow-xl overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-10">
               <CalendarCheck className="h-32 w-32" />
             </div>
@@ -454,7 +454,7 @@ const BookAppointment = () => {
                   </select>
                   {errors.patientId && (
                     <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" />
+                      <CircleAlert className="h-3 w-3" />
                       {errors.patientId.message}
                     </p>
                   )}
@@ -485,7 +485,7 @@ const BookAppointment = () => {
                   </select>
                   {errors.doctorId && (
                     <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" />
+                      <CircleAlert className="h-3 w-3" />
                       {errors.doctorId.message}
                     </p>
                   )}
@@ -512,7 +512,7 @@ const BookAppointment = () => {
 
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" />
+                      <CircleAlert className="h-4 w-4" />
                       Priority Level
                     </label>
                     <select
@@ -547,7 +547,7 @@ const BookAppointment = () => {
                     />
                     {errors.date && (
                       <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                        <AlertCircle className="h-3 w-3" />
+                        <CircleAlert className="h-3 w-3" />
                         {errors.date.message}
                       </p>
                     )}
@@ -634,7 +634,7 @@ const BookAppointment = () => {
                             relative h-12 text-xs font-bold rounded-xl transition-all
                             ${
                               isActive
-                                ? "bg-gradient-to-r from-teal-500 to-indigo-500 text-white shadow-lg scale-105"
+                                ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg scale-105"
                                 : isBooked
                                   ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                                   : isAvailable
@@ -646,7 +646,7 @@ const BookAppointment = () => {
                           {slot.display}
                           {isBooked && (
                             <div className="absolute -top-1 -right-1">
-                              <XCircle className="h-3 w-3 text-red-500" />
+                              <CircleX className="h-3 w-3 text-red-500" />
                             </div>
                           )}
                         </motion.button>
@@ -655,7 +655,7 @@ const BookAppointment = () => {
                   </div>
                   {errors.timeSlot && (
                     <p className="text-xs text-red-500 flex items-center gap-1 mt-2">
-                      <AlertCircle className="h-3 w-3" />
+                      <CircleAlert className="h-3 w-3" />
                       {errors.timeSlot.message}
                     </p>
                   )}
@@ -723,7 +723,7 @@ const BookAppointment = () => {
                     whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={isBooking || !isValid}
-                    className="h-12 px-8 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg disabled:opacity-50 flex items-center gap-2"
+                    className="h-12 px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg disabled:opacity-50 flex items-center gap-2"
                   >
                     {isBooking ? (
                       <>
@@ -767,7 +767,7 @@ const BookAppointment = () => {
                   transition={{ type: "spring", delay: 0.2 }}
                   className="h-20 w-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6"
                 >
-                  <CheckCircle2 className="h-10 w-10 text-white" />
+                  <CircleCheckBig className="h-10 w-10 text-white" />
                 </motion.div>
                 <h3 className="text-2xl font-black text-slate-900 mb-2">
                   Booking Confirmed!
@@ -790,3 +790,4 @@ const BookAppointment = () => {
 };
 
 export default BookAppointment;
+

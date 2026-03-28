@@ -8,9 +8,9 @@ import {
   UserPlus,
   Phone,
   User,
-  Edit2,
+  Pencil,
   Trash2,
-  AlertCircle,
+  CircleAlert,
   HeartPulse,
   Activity,
   Shield,
@@ -24,9 +24,9 @@ import {
   MapPin,
   FileText,
   Scan,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
+  CircleCheckBig,
+  CircleX,
+  TriangleAlert,
   Download,
   Printer,
   Filter,
@@ -42,6 +42,7 @@ import {
 import {
   useUpdatePatientMutation,
   useDeletePatientMutation,
+  useBulkDeletePatientsMutation,
 } from "@/features/patients/patientApi";
 import Modal from "@/components/ui/Modal";
 import { toast } from "sonner";
@@ -66,6 +67,7 @@ const PatientsList = () => {
   
   const [updatePatient, { isLoading: isUpdating }] = useUpdatePatientMutation();
   const [deletePatient] = useDeletePatientMutation();
+  const [bulkDeletePatients] = useBulkDeletePatientsMutation();
   
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -127,7 +129,7 @@ const PatientsList = () => {
     if (!selectedPatients.length) return;
     
     try {
-      // Bulk delete logic here
+      await bulkDeletePatients(selectedPatients).unwrap();
       toast.success(`${selectedPatients.length} patients deactivated successfully`);
       setSelectedPatients([]);
       setBulkDeleteModalOpen(false);
@@ -158,8 +160,8 @@ const PatientsList = () => {
             whileHover={{ scale: 1.05, rotate: 5 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-indigo-500 rounded-2xl opacity-20 blur-sm" />
-            <div className="relative h-14 w-14 bg-gradient-to-br from-teal-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-2xl opacity-20 blur-sm" />
+            <div className="relative h-14 w-14 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
               <span className="text-white font-black text-lg">
                 {row.name?.charAt(0)?.toUpperCase()}
               </span>
@@ -221,7 +223,7 @@ const PatientsList = () => {
           </div>
           {row.email && (
             <div className="flex items-center gap-2 group">
-              <Mail className="h-3 w-3 text-indigo-500 group-hover:scale-125 transition-transform" />
+              <Mail className="h-3 w-3 text-cyan-500 group-hover:scale-125 transition-transform" />
               <span className="text-xs font-medium text-slate-600">{row.email}</span>
             </div>
           )}
@@ -237,7 +239,7 @@ const PatientsList = () => {
             row.bloodGroup === "O+" ? "bg-green-50 text-green-700 border border-green-200" :
             row.bloodGroup === "O-" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
             row.bloodGroup === "A+" ? "bg-blue-50 text-blue-700 border border-blue-200" :
-            row.bloodGroup === "A-" ? "bg-indigo-50 text-indigo-700 border border-indigo-200" :
+            row.bloodGroup === "A-" ? "bg-cyan-50 text-cyan-700 border border-cyan-200" :
             row.bloodGroup === "B+" ? "bg-purple-50 text-purple-700 border border-purple-200" :
             row.bloodGroup === "B-" ? "bg-pink-50 text-pink-700 border border-pink-200" :
             row.bloodGroup === "AB+" ? "bg-amber-50 text-amber-700 border border-amber-200" :
@@ -284,12 +286,12 @@ const PatientsList = () => {
         >
           {row.isActive ? (
             <>
-              <CheckCircle2 className="h-3 w-3" />
+              <CircleCheckBig className="h-3 w-3" />
               OPERATIONAL
             </>
           ) : (
             <>
-              <XCircle className="h-3 w-3" />
+              <CircleX className="h-3 w-3" />
               DECOMMISSIONED
             </>
           )}
@@ -307,7 +309,7 @@ const PatientsList = () => {
               setViewPatient(row);
               setViewModalOpen(true);
             }}
-            className="h-9 w-9 flex items-center justify-center bg-slate-50 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all duration-300"
+            className="h-9 w-9 flex items-center justify-center bg-slate-50 text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl border border-slate-100 hover:border-cyan-200 transition-all duration-300"
             title="View Record"
           >
             <Eye className="h-4 w-4" />
@@ -319,7 +321,7 @@ const PatientsList = () => {
             className="h-9 w-9 flex items-center justify-center bg-slate-50 text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-xl border border-slate-100 hover:border-teal-200 transition-all duration-300"
             title="Modify Record"
           >
-            <Edit2 className="h-4 w-4" />
+            <Pencil className="h-4 w-4" />
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -406,7 +408,7 @@ const PatientsList = () => {
       >
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-indigo-500 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
               <Users className="h-5 w-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800">
@@ -434,7 +436,7 @@ const PatientsList = () => {
                 onClick={() => setSelectedPatients([])}
                 className="text-teal-500 hover:text-teal-700"
               >
-                <XCircle className="h-4 w-4" />
+                <CircleX className="h-4 w-4" />
               </button>
             </motion.div>
           )}
@@ -458,7 +460,7 @@ const PatientsList = () => {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link
               to="/receptionist/patients/new"
-              className="h-14 px-8 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl flex items-center gap-3 group"
+              className="h-14 px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl flex items-center gap-3 group"
             >
               <UserPlus className="h-5 w-5 group-hover:rotate-12 transition-transform" />
               Initialize New Intake
@@ -585,7 +587,7 @@ const PatientsList = () => {
           className="p-12 bg-red-50/50 border border-red-100 rounded-3xl text-center"
         >
           <div className="h-20 w-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertTriangle className="h-10 w-10 text-red-500" />
+            <TriangleAlert className="h-10 w-10 text-red-500" />
           </div>
           <p className="text-red-600 font-black text-lg mb-2">
             Access Protocol Failure
@@ -724,7 +726,7 @@ const PatientsList = () => {
 
             <div className="col-span-2 space-y-2">
               <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
+                <CircleAlert className="h-3 w-3" />
                 Known Allergies
               </label>
               <input
@@ -749,7 +751,7 @@ const PatientsList = () => {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isUpdating}
-              className="h-12 px-8 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg disabled:opacity-50 flex items-center gap-2"
+              className="h-12 px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg disabled:opacity-50 flex items-center gap-2"
             >
               {isUpdating ? (
                 <>
@@ -775,8 +777,8 @@ const PatientsList = () => {
       >
         {viewPatient && (
           <div className="space-y-6 pt-2">
-            <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-teal-50 to-indigo-50 rounded-2xl border border-teal-100">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-500 to-indigo-500 flex items-center justify-center text-white font-black text-2xl">
+            <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border border-teal-100">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white font-black text-2xl">
                 {viewPatient.name?.charAt(0)?.toUpperCase()}
               </div>
               <div>
@@ -817,7 +819,7 @@ const PatientsList = () => {
                   <span>{viewPatient.contact || "—"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-indigo-500" />
+                  <Mail className="h-4 w-4 text-cyan-500" />
                   <span>{viewPatient.email || "—"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
@@ -845,7 +847,7 @@ const PatientsList = () => {
       >
         <div className="space-y-6 pt-2">
           <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-200">
-            <AlertTriangle className="h-8 w-8 text-red-500" />
+            <TriangleAlert className="h-8 w-8 text-red-500" />
             <p className="text-sm text-red-700">
               Are you sure you want to deactivate this patient? This action will archive their records.
             </p>
@@ -875,7 +877,7 @@ const PatientsList = () => {
       >
         <div className="space-y-6 pt-2">
           <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-200">
-            <AlertTriangle className="h-8 w-8 text-red-500" />
+            <TriangleAlert className="h-8 w-8 text-red-500" />
             <div>
               <p className="text-sm text-red-700 font-bold mb-1">
                 Deactivate {selectedPatients.length} patients?

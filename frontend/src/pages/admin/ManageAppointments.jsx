@@ -12,9 +12,9 @@ import {
   User,
   Stethoscope,
   Clock,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
+  CircleCheckBig,
+  CircleX,
+  CircleAlert,
   Search,
   Filter,
   ChevronDown,
@@ -178,7 +178,7 @@ const ManageAppointments = () => {
           bg: "bg-emerald-50",
           text: "text-emerald-700",
           border: "border-emerald-200",
-          icon: CheckCircle2,
+          icon: CircleCheckBig,
           label: "Completed",
         };
       case "pending":
@@ -194,7 +194,7 @@ const ManageAppointments = () => {
           bg: "bg-blue-50",
           text: "text-blue-700",
           border: "border-blue-200",
-          icon: CheckCircle2,
+          icon: CircleCheckBig,
           label: "Confirmed",
         };
       case "cancelled":
@@ -202,7 +202,7 @@ const ManageAppointments = () => {
           bg: "bg-red-50",
           text: "text-red-700",
           border: "border-red-200",
-          icon: XCircle,
+          icon: CircleX,
           label: "Cancelled",
         };
       case "no_show":
@@ -210,7 +210,7 @@ const ManageAppointments = () => {
           bg: "bg-slate-50",
           text: "text-slate-700",
           border: "border-slate-200",
-          icon: AlertCircle,
+          icon: CircleAlert,
           label: "No Show",
         };
       default:
@@ -218,7 +218,7 @@ const ManageAppointments = () => {
           bg: "bg-slate-50",
           text: "text-slate-700",
           border: "border-slate-200",
-          icon: AlertCircle,
+          icon: CircleAlert,
           label: status,
         };
     }
@@ -351,7 +351,7 @@ const ManageAppointments = () => {
                     e.currentTarget.style.color = "#64748b";
                   }}
                 >
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CircleCheckBig className="h-4 w-4" />
                 </motion.button>
 
                 <motion.button
@@ -360,7 +360,7 @@ const ManageAppointments = () => {
                   onClick={() => handleCancelClick(row._id)}
                   className="p-2 rounded-lg transition-all hover:bg-red-50 hover:text-red-500"
                 >
-                  <XCircle className="h-4 w-4" />
+                  <CircleX className="h-4 w-4" />
                 </motion.button>
               </>
             )}
@@ -626,13 +626,13 @@ const ManageAppointments = () => {
             label: "Completed",
             value:
               appointments?.filter((a) => a.status === "completed").length || 0,
-            icon: CheckCircle2,
+            icon: CircleCheckBig,
           },
           {
             label: "Cancelled",
             value:
               appointments?.filter((a) => a.status === "cancelled").length || 0,
-            icon: XCircle,
+            icon: CircleX,
           },
         ].map((stat, index) => {
           const Icon = stat.icon;
@@ -692,7 +692,7 @@ const ManageAppointments = () => {
         ) : isError ? (
           <div className="h-[500px] flex flex-col items-center justify-center gap-4">
             <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center">
-              <AlertCircle className="h-8 w-8 text-red-400" />
+              <CircleAlert className="h-8 w-8 text-red-400" />
             </div>
             <p className="text-sm font-bold text-red-400">
               Grid Access Exception
@@ -834,13 +834,13 @@ const ManageAppointments = () => {
                     } ${getStatusColor(selectedAppointment.status).border}`}
                   >
                     {selectedAppointment.status === "completed" && (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CircleCheckBig className="h-4 w-4 text-emerald-600" />
                     )}
                     {selectedAppointment.status === "pending" && (
                       <Clock className="h-4 w-4 text-amber-600" />
                     )}
                     {selectedAppointment.status === "cancelled" && (
-                      <XCircle className="h-4 w-4 text-red-600" />
+                      <CircleX className="h-4 w-4 text-red-600" />
                     )}
                     <span
                       className={`font-bold ${getStatusColor(selectedAppointment.status).text}`}
@@ -875,7 +875,7 @@ const ManageAppointments = () => {
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
-                    <AlertCircle className="h-6 w-6 text-red-600" />
+                    <CircleAlert className="h-6 w-6 text-red-600" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-800">
                     Cancel Appointment
@@ -911,3 +911,4 @@ const ManageAppointments = () => {
 };
 
 export default ManageAppointments;
+

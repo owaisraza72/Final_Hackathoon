@@ -56,7 +56,7 @@ export const prescriptionApi = createApi({
       query: (id) => ({
         url: `prescriptions/${id}/pdf`,
         method: "GET",
-        responseHandler: "blob",
+        responseHandler: (response) => response.arrayBuffer(),
       }),
     }),
     updatePrescription: builder.mutation({

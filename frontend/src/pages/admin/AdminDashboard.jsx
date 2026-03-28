@@ -21,7 +21,7 @@ import {
   Zap,
   FileText,
   UserPlus,
-  CheckCircle2,
+  CircleCheckBig,
   Bell,
   RefreshCw,
 } from "lucide-react";
@@ -590,7 +590,7 @@ const AdminDashboard = () => {
                 {
                   action: "Appointment completed",
                   time: "15 min ago",
-                  icon: CheckCircle2,
+                  icon: CircleCheckBig,
                 },
                 {
                   action: "Monthly report generated",
@@ -783,3 +783,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

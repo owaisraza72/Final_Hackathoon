@@ -33,9 +33,9 @@ import {
   Phone,
   Mail,
   MapPin,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
+  CircleAlert,
+  CircleCheckBig,
+  CircleX,
   Download,
   Printer,
   Share2,
@@ -242,21 +242,21 @@ const PatientHistory = () => {
           bg: "bg-amber-50",
           text: "text-amber-700",
           border: "border-amber-200",
-          icon: AlertCircle,
+          icon: CircleAlert,
         };
       case "high":
         return {
           bg: "bg-orange-50",
           text: "text-orange-700",
           border: "border-orange-200",
-          icon: AlertCircle,
+          icon: CircleAlert,
         };
       case "critical":
         return {
           bg: "bg-red-50",
           text: "text-red-700",
           border: "border-red-200",
-          icon: XCircle,
+          icon: CircleX,
         };
       default:
         return {
@@ -1153,7 +1153,7 @@ const PatientHistory = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <AlertCircle className="h-12 w-12 text-red-300 mx-auto mb-3" />
+            <CircleAlert className="h-12 w-12 text-red-300 mx-auto mb-3" />
             <p className="text-sm font-bold text-red-400">
               Failed to load patient data
             </p>

@@ -232,20 +232,57 @@ class PatientService {
   };
 
   // ─────────────────────────
-  // Delete patient (soft)
+  // Delete patient (Hard Delete)
   // ─────────────────────────
   deletePatient = async (patientId) => {
-    const patient = await Patient.findOneAndUpdate(
-      { _id: patientId, isActive: true },
-      { $set: { isActive: false } },
-      { new: true },
-    );
+    const patient = await Patient.findByIdAndDelete(patientId);
 
     if (!patient) {
       throw new ApiError(HTTP_STATUS.NOT_FOUND, "Patient not found");
     }
 
+    // Delete associated User account
+    if (patient.userId) {
+      await User.findByIdAndDelete(patient.userId);
+    }
+
+    // Cascade delete associated medical records
+    await Promise.all([
+      Appointment.deleteMany({ patientId }),
+      Prescription.deleteMany({ patientId }),
+      DiagnosisLog.deleteMany({ patientId }),
+    ]);
+
     return patient;
+  };
+
+  // ─────────────────────────
+  // Bulk Delete patients (Hard Delete)
+  // ─────────────────────────
+  bulkDeletePatients = async (patientIds) => {
+    const patients = await Patient.find({ _id: { $in: patientIds } });
+    
+    if (!patients.length) {
+      return 0;
+    }
+
+    const ids = patients.map(p => p._id);
+    const userIds = patients.map(p => p.userId).filter(Boolean);
+
+    await Patient.deleteMany({ _id: { $in: ids } });
+
+    if (userIds.length > 0) {
+      await User.deleteMany({ _id: { $in: userIds } });
+    }
+
+    // Cascade delete associated medical records
+    await Promise.all([
+      Appointment.deleteMany({ patientId: { $in: ids } }),
+      Prescription.deleteMany({ patientId: { $in: ids } }),
+      DiagnosisLog.deleteMany({ patientId: { $in: ids } }),
+    ]);
+
+    return ids.length;
   };
 }
 

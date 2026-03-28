@@ -4,7 +4,7 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  AlertCircle,
+  CircleAlert,
   Shield,
   Fingerprint,
   HeartPulse,
@@ -13,7 +13,7 @@ import {
   Key,
   Mail,
   Lock,
-  CheckCircle2,
+  CircleCheckBig,
   Award,
   Sparkles,
 } from "lucide-react";
@@ -24,6 +24,11 @@ import useAuth from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Primary teal color
+const primaryTeal = "#00BAAB";
+const tealLight = "#E0F7F7";
+const tealGlow = "rgba(0, 170, 175, 0.15)";
 
 // Constants
 const MAX_LOGIN_ATTEMPTS = 3;
@@ -131,10 +136,8 @@ const LoginPage = () => {
         const res = await login(formData).unwrap();
         const userRole = res.data?.user?.role;
 
-        // Reset login attempts on success
         setLoginAttempts(0);
 
-        // Role-based routing
         const roleRoutes = {
           ADMIN: ROUTES.ADMIN_DASHBOARD,
           DOCTOR: ROUTES.DOCTOR_DASHBOARD,
@@ -150,16 +153,13 @@ const LoginPage = () => {
           description: `Logged in as ${userRole?.toLowerCase()}`,
         });
 
-        // Smooth navigation
         setTimeout(() => {
           navigate(destination, { replace: true });
         }, ANIMATION_DURATION);
       } catch (err) {
-        // Increment login attempts
         const newAttempts = loginAttempts + 1;
         setLoginAttempts(newAttempts);
 
-        // Lock account after max attempts
         if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
           setIsLocked(true);
           setLockTimer(LOCKOUT_DURATION);
@@ -175,7 +175,6 @@ const LoginPage = () => {
           });
         }
 
-        // Handle API validation errors
         if (err?.data?.errors?.length) {
           const apiErrors = {};
           err.data.errors.forEach((e) => {
@@ -233,10 +232,11 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50">
-      {/* Skip to content link for accessibility */}
+      {/* Skip to content link */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-teal-600 text-white px-4 py-2 rounded-lg z-50"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 text-white px-4 py-2 rounded-lg z-50"
+        style={{ backgroundColor: primaryTeal }}
       >
         Skip to content
       </a>
@@ -258,7 +258,8 @@ const LoginPage = () => {
               <motion.div
                 whileHover={{ rotate: 360, scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 200 }}
-                className="mx-auto h-20 w-20 mb-4 rounded-2xl bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-teal-500/30 relative overflow-hidden cursor-pointer"
+                className="mx-auto h-20 w-20 mb-4 rounded-2xl flex items-center justify-center shadow-2xl shadow-teal-500/30 relative overflow-hidden cursor-pointer"
+                style={{ background: `linear-gradient(135deg, ${primaryTeal},#0094A9)` }}
                 role="img"
                 aria-label="ClinicOS Logo"
               >
@@ -281,7 +282,7 @@ const LoginPage = () => {
                 variants={itemVariants}
                 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-2"
               >
-                Welcome<span className="text-teal-600">Back</span>
+                Welcome<span style={{ color: primaryTeal }}>Back</span>
               </motion.h1>
 
               <motion.p
@@ -309,7 +310,8 @@ const LoginPage = () => {
                   repeat: Infinity,
                   ease: "linear",
                 }}
-                className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-indigo-500 to-teal-500 bg-[size:200%]"
+                className="h-1.5 w-full bg-[size:200%]"
+                style={{ background: `linear-gradient(90deg, ${primaryTeal},#0094A9, ${primaryTeal})` }}
                 aria-hidden="true"
               />
 
@@ -324,7 +326,7 @@ const LoginPage = () => {
                     htmlFor="email"
                     className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2"
                   >
-                    <Mail className="h-4 w-4" />
+                    <Mail className="h-4 w-4" style={{ color: primaryTeal }} />
                     Email Address
                   </Label>
                   <div className="relative">
@@ -362,7 +364,7 @@ const LoginPage = () => {
                         className="text-xs text-red-500 flex items-center gap-1"
                         role="alert"
                       >
-                        <AlertCircle className="h-3 w-3" />
+                        <CircleAlert className="h-3 w-3" />
                         {errors.email}
                       </motion.p>
                     )}
@@ -376,13 +378,14 @@ const LoginPage = () => {
                       htmlFor="password"
                       className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2"
                     >
-                      <Lock className="h-4 w-4" />
+                      <Lock className="h-4 w-4" style={{ color: primaryTeal }} />
                       Password
                     </Label>
                     <button
                       type="button"
                       onClick={() => toast.info("Password reset coming soon!")}
-                      className="text-[10px] font-bold uppercase text-teal-600 hover:text-teal-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded"
+                      className="text-[10px] font-bold uppercase transition-colors focus:outline-none focus:ring-2 rounded"
+                      style={{ color: primaryTeal }}
                     >
                       Forgot?
                     </button>
@@ -410,7 +413,8 @@ const LoginPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-slate-400 hover:text-teal-600 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 rounded"
+                        className="text-slate-400 transition-colors focus:outline-none focus:ring-2 rounded"
+                        style={{ hoverColor: primaryTeal }}
                         aria-label={
                           showPassword ? "Hide password" : "Show password"
                         }
@@ -438,7 +442,7 @@ const LoginPage = () => {
                         className="text-xs text-red-500 flex items-center gap-1"
                         role="alert"
                       >
-                        <AlertCircle className="h-3 w-3" />
+                        <CircleAlert className="h-3 w-3" />
                         {errors.password}
                       </motion.p>
                     )}
@@ -459,13 +463,14 @@ const LoginPage = () => {
                       className={`w-4 h-4 rounded border-2 transition-all flex items-center justify-center
                       ${
                         rememberMe
-                          ? "bg-teal-500 border-teal-500"
+                          ? "border-teal-500"
                           : "border-slate-300 group-hover:border-teal-400"
                       }`}
+                      style={rememberMe ? { backgroundColor: primaryTeal } : {}}
                       aria-hidden="true"
                     >
                       {rememberMe && (
-                        <CheckCircle2 className="h-3 w-3 text-white" />
+                        <CircleCheckBig className="h-3 w-3 text-white" />
                       )}
                     </div>
                     <span className="text-xs font-medium text-slate-600">
@@ -482,7 +487,7 @@ const LoginPage = () => {
                         className="text-xs text-orange-600 flex items-center gap-1"
                         role="status"
                       >
-                        <AlertCircle className="h-3 w-3" />
+                        <CircleAlert className="h-3 w-3" />
                         {remainingAttempts}{" "}
                         {remainingAttempts === 1 ? "attempt" : "attempts"} left
                       </motion.div>
@@ -511,10 +516,11 @@ const LoginPage = () => {
                   <Button
                     type="submit"
                     disabled={isSubmitDisabled}
-                    className="w-full h-12 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white font-bold uppercase tracking-wider text-sm rounded-xl shadow-xl shadow-teal-500/20 transition-all relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-12 text-white font-bold uppercase tracking-wider text-sm rounded-xl shadow-xl transition-all relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: `linear-gradient(135deg, ${primaryTeal},#0094A9)` }}
                     aria-busy={isLoggingIn}
                   >
-                    {/* Shine effect - only when not disabled */}
+                    {/* Shine effect */}
                     {!isSubmitDisabled && (
                       <motion.div
                         animate={{
@@ -553,11 +559,11 @@ const LoginPage = () => {
                 {/* Security Badge */}
                 <div className="pt-4">
                   <div className="flex items-center justify-center gap-3">
-                    <Shield className="h-3 w-3 text-teal-500" />
+                    <Shield className="h-3 w-3" style={{ color: primaryTeal }} />
                     <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider">
                       256-bit Clinical Grade Encryption
                     </span>
-                    <Shield className="h-3 w-3 text-teal-500" />
+                    <Shield className="h-3 w-3" style={{ color: primaryTeal }} />
                   </div>
                 </div>
               </form>
@@ -569,7 +575,8 @@ const LoginPage = () => {
                 New to ClinicOS?{" "}
                 <Link
                   to={ROUTES.REGISTER}
-                  className="text-teal-600 hover:text-teal-700 ml-1 border-b-2 border-teal-200 hover:border-teal-400 transition-all inline-flex items-center gap-1 group focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded"
+                  className="ml-1 border-b-2 transition-all inline-flex items-center gap-1 group focus:outline-none focus:ring-2 rounded"
+                  style={{ color: primaryTeal, borderColor: `${primaryTeal}40` }}
                 >
                   Create Account
                   <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
@@ -583,7 +590,7 @@ const LoginPage = () => {
               className="flex justify-center gap-4 mt-6"
             >
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200">
-                <Shield className="h-3 w-3 text-teal-500" />
+                <Shield className="h-3 w-3" style={{ color: primaryTeal }} />
                 <span className="text-[8px] font-black uppercase text-slate-500">
                   HIPAA Compliant
                 </span>

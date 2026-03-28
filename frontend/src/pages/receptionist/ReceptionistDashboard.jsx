@@ -17,9 +17,9 @@ import {
   ChevronRight,
   Bell,
   Timer,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
+  CircleAlert,
+  CircleCheckBig,
+  CircleX,
   FileText,
   Phone,
   Mail,
@@ -103,8 +103,8 @@ const ReceptionistDashboard = () => {
       icon: CalendarCheck,
       title: "Book Appointment",
       desc: "Schedule doctor visit",
-      color: "from-indigo-500 to-purple-500",
-      bg: "bg-indigo-50",
+      color: "from-cyan-500 to-purple-500",
+      bg: "bg-cyan-50",
       shortcut: "⌘B",
     },
     {
@@ -161,7 +161,7 @@ const ReceptionistDashboard = () => {
       >
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-teal-500 to-indigo-500 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
               <Users className="h-4 w-4 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800">
@@ -202,7 +202,7 @@ const ReceptionistDashboard = () => {
           <div className="w-px h-6 bg-slate-200" />
           <Link
             to="/receptionist/patients/new"
-            className="px-5 py-2 bg-gradient-to-r from-teal-500 to-indigo-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:from-teal-600 hover:to-indigo-600 transition-all flex items-center gap-2 shadow-lg shadow-teal-500/20 group"
+            className="px-5 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all flex items-center gap-2 shadow-lg shadow-teal-500/20 group"
           >
             <UserPlus className="h-4 w-4 group-hover:rotate-12 transition-transform" />
             New Registration
@@ -241,7 +241,7 @@ const ReceptionistDashboard = () => {
         <StatCard
           title="Completed"
           value={completedAppointments.length}
-          icon={<CheckCircle2 className="h-6 w-6" />}
+          icon={<CircleCheckBig className="h-6 w-6" />}
           description="Patients seen today"
           trend={`${Math.round((completedAppointments.length / (todaysAppointments.length || 1)) * 100)}% completion`}
           trendUp={true}
@@ -297,7 +297,7 @@ const ReceptionistDashboard = () => {
           <div className="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-slate-50 to-white">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-indigo-500 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
                   <Activity className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -318,7 +318,7 @@ const ReceptionistDashboard = () => {
                     onClick={() => setSelectedView(view)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                       selectedView === view
-                        ? "bg-gradient-to-r from-teal-500 to-indigo-500 text-white shadow-lg"
+                        ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
@@ -371,7 +371,7 @@ const ReceptionistDashboard = () => {
 
                           {/* Patient Info */}
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-teal-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
                               {app.patientId?.name?.charAt(0) || "P"}
                             </div>
                             <div>
@@ -414,10 +414,10 @@ const ReceptionistDashboard = () => {
                               <Clock className="h-3 w-3" />
                             )}
                             {app.status === "completed" && (
-                              <CheckCircle2 className="h-3 w-3" />
+                              <CircleCheckBig className="h-3 w-3" />
                             )}
                             {app.status === "cancelled" && (
-                              <XCircle className="h-3 w-3" />
+                              <CircleX className="h-3 w-3" />
                             )}
                             {app.status}
                           </div>
@@ -447,7 +447,7 @@ const ReceptionistDashboard = () => {
         {/* Right Column - Insights & Quick Stats */}
         <motion.div variants={itemVariants} className="space-y-6">
           {/* Today's Summary Card */}
-          <div className="bg-gradient-to-br from-teal-600 to-indigo-600 rounded-3xl p-6 text-white shadow-xl">
+          <div className="bg-gradient-to-br from-teal-600 to-cyan-600 rounded-3xl p-6 text-white shadow-xl">
             <h3 className="text-sm font-black uppercase tracking-wider mb-4 opacity-90 flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
               Today's Summary
@@ -514,3 +514,4 @@ const ReceptionistDashboard = () => {
 };
 
 export default ReceptionistDashboard;
+

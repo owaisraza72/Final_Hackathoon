@@ -7,8 +7,8 @@ import {
   Bell, 
   Check, 
   Clock, 
-  CheckCircle2, 
-  AlertCircle, 
+  CircleCheckBig, 
+  CircleAlert, 
   Calendar, 
   FileText,
   Sparkles,
@@ -29,8 +29,8 @@ const TopNavNotifications = ({ isOpen, setIsOpen }) => {
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case "SUCCESS": return <CheckCircle2 className="text-emerald-500" size={16} />;
-      case "ERROR": return <AlertCircle className="text-red-500" size={16} />;
+      case "SUCCESS": return <CircleCheckBig className="text-emerald-500" size={16} />;
+      case "ERROR": return <CircleAlert className="text-red-500" size={16} />;
       case "APPOINTMENT": return <Calendar className="text-indigo-500" size={16} />;
       case "PRESCRIPTION": return <FileText className="text-teal-500" size={16} />;
       default: return <Bell className="text-slate-400" size={16} />;
@@ -215,4 +215,5 @@ const TopNavNotifications = ({ isOpen, setIsOpen }) => {
 };
 
 export default TopNavNotifications;
+
 

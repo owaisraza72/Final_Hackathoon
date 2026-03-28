@@ -12,9 +12,9 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
+  CircleAlert,
+  CircleCheckBig,
+  CircleX,
   Activity,
   Stethoscope,
   Phone,
@@ -127,7 +127,7 @@ const DailySchedule = () => {
           bg: "bg-emerald-50",
           text: "text-emerald-700",
           border: "border-emerald-200",
-          icon: CheckCircle2,
+          icon: CircleCheckBig,
           label: "Completed"
         };
       case "pending":
@@ -143,7 +143,7 @@ const DailySchedule = () => {
           bg: "bg-red-50",
           text: "text-red-700",
           border: "border-red-200",
-          icon: XCircle,
+          icon: CircleX,
           label: "Cancelled"
         };
       default:
@@ -151,7 +151,7 @@ const DailySchedule = () => {
           bg: "bg-slate-50",
           text: "text-slate-700",
           border: "border-slate-200",
-          icon: AlertCircle,
+          icon: CircleAlert,
           label: status
         };
     }
@@ -611,7 +611,7 @@ const DailySchedule = () => {
                   onClick={() => setShowDetailsModal(false)}
                   className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  <XCircle className="h-5 w-5 text-slate-500" />
+                  <CircleX className="h-5 w-5 text-slate-500" />
                 </button>
               </div>
 
@@ -680,9 +680,9 @@ const DailySchedule = () => {
                   <div className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${
                     getStatusColor(selectedAppointment.status).bg
                   } ${getStatusColor(selectedAppointment.status).border}`}>
-                    {selectedAppointment.status === "completed" && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+                    {selectedAppointment.status === "completed" && <CircleCheckBig className="h-4 w-4 text-emerald-600" />}
                     {selectedAppointment.status === "pending" && <Clock className="h-4 w-4 text-amber-600" />}
-                    {selectedAppointment.status === "cancelled" && <XCircle className="h-4 w-4 text-red-600" />}
+                    {selectedAppointment.status === "cancelled" && <CircleX className="h-4 w-4 text-red-600" />}
                     <span className={`font-bold ${getStatusColor(selectedAppointment.status).text}`}>
                       {getStatusColor(selectedAppointment.status).label}
                     </span>
@@ -714,7 +714,7 @@ const DailySchedule = () => {
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
-                    <AlertCircle className="h-6 w-6 text-red-600" />
+                    <CircleAlert className="h-6 w-6 text-red-600" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-800">Cancel Appointment</h3>
                 </div>

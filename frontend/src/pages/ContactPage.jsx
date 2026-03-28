@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Mail, Phone, MapPin, Send, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, MapPin, Send, CircleAlert, CircleCheckBig } from "lucide-react";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -148,7 +148,7 @@ const ContactPage = () => {
               {/* Response Time */}
               <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 space-y-2">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <CircleCheckBig className="h-5 w-5 text-green-600" />
                   <p className="font-medium text-sm text-green-700 dark:text-green-400">
                     Quick Response
                   </p>
@@ -183,7 +183,7 @@ const ContactPage = () => {
                     />
                     {errors.name && (
                       <p className="text-sm text-destructive flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4" />
+                        <CircleAlert className="h-4 w-4" />
                         {errors.name}
                       </p>
                     )}
@@ -209,7 +209,7 @@ const ContactPage = () => {
                     />
                     {errors.email && (
                       <p className="text-sm text-destructive flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4" />
+                        <CircleAlert className="h-4 w-4" />
                         {errors.email}
                       </p>
                     )}
@@ -235,7 +235,7 @@ const ContactPage = () => {
                     />
                     {errors.subject && (
                       <p className="text-sm text-destructive flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4" />
+                        <CircleAlert className="h-4 w-4" />
                         {errors.subject}
                       </p>
                     )}
@@ -261,7 +261,7 @@ const ContactPage = () => {
                     />
                     {errors.message && (
                       <p className="text-sm text-destructive flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4" />
+                        <CircleAlert className="h-4 w-4" />
                         {errors.message}
                       </p>
                     )}

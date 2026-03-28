@@ -17,7 +17,7 @@ import {
   Sparkles,
   Activity,
   ChevronRight,
-  AlertCircle,
+  CircleAlert,
   Award,
   Calendar,
   Phone,
@@ -134,22 +134,22 @@ const RegisterPage = () => {
     PATIENT: {
       icon: User,
       label: "Patient",
-      color: "from-blue-500 to-cyan-500",
-      bg: "bg-blue-50",
+      color: "from-teal-400 to-cyan-400",
+      bg: "bg-teal-50",
       description: "Book appointments and access medical records",
     },
     DOCTOR: {
       icon: Stethoscope,
       label: "Doctor",
-      color: "from-teal-500 to-emerald-500",
+      color: "from-teal-400 to-cyan-400",
       bg: "bg-teal-50",
       description: "Manage patients and write prescriptions",
     },
     RECEPTIONIST: {
       icon: Users,
       label: "Receptionist",
-      color: "from-purple-500 to-pink-500",
-      bg: "bg-purple-50",
+      color: "from-teal-400 to-cyan-400",
+      bg: "bg-teal-50",
       description: "Handle appointments and patient registration",
     },
   };
@@ -157,7 +157,7 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
       {/* Main Content - Centered with proper spacing */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20">
         <div className="max-w-4xl mx-auto">
           {/* Header Section */}
           <motion.div
@@ -166,7 +166,7 @@ const RegisterPage = () => {
             className="text-center mb-8 md:mb-12"
           >
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-2">
-              Create<span className="text-indigo-600">Account</span>
+              Create<span className="text-cyan-400">Account</span>
             </h1>
             <p className="text-sm md:text-base text-slate-500 font-semibold uppercase tracking-wider flex items-center justify-center gap-2">
               <Activity className="h-4 w-4" />
@@ -290,7 +290,7 @@ const RegisterPage = () => {
                           animate={{ opacity: 1 }}
                           className="text-xs text-red-500 flex items-center gap-1"
                         >
-                          <AlertCircle className="h-3 w-3" />
+                          <CircleAlert className="h-3 w-3" />
                           {errors.name}
                         </motion.p>
                       )}
@@ -330,7 +330,7 @@ const RegisterPage = () => {
                           animate={{ opacity: 1 }}
                           className="text-xs text-red-500 flex items-center gap-1"
                         >
-                          <AlertCircle className="h-3 w-3" />
+                          <CircleAlert className="h-3 w-3" />
                           {errors.email}
                         </motion.p>
                       )}
@@ -550,8 +550,8 @@ const RegisterPage = () => {
                     className={`mt-1 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0
                       ${
                         acceptedTerms
-                          ? "bg-indigo-600 border-indigo-600"
-                          : "border-slate-300 hover:border-indigo-400"
+                          ? "bg-cyan-600 border-cyan-600"
+                          : "border-slate-300 hover:border-cyan-400"
                       }`}
                   >
                     {acceptedTerms && <Check className="h-3 w-3 text-white" />}
@@ -560,14 +560,14 @@ const RegisterPage = () => {
                     I agree to the{" "}
                     <a
                       href="#"
-                      className="text-indigo-600 font-bold hover:underline"
+                      className="text-cyan-600 font-bold hover:underline"
                     >
                       Terms of Service
                     </a>{" "}
                     and{" "}
                     <a
                       href="#"
-                      className="text-indigo-600 font-bold hover:underline"
+                      className="text-cyan-600 font-bold hover:underline"
                     >
                       Privacy Policy
                     </a>
@@ -580,7 +580,7 @@ const RegisterPage = () => {
                 <button
                   type="submit"
                   disabled={isRegistering || !acceptedTerms}
-                  className="w-full h-14 bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white font-black uppercase tracking-wider text-sm rounded-xl shadow-xl shadow-indigo-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="w-full h-14 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white font-black uppercase tracking-wider text-sm rounded-xl shadow-xl shadow-indigo-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                 >
                   {isRegistering ? (
                     <>
@@ -609,7 +609,7 @@ const RegisterPage = () => {
             Already have an account?{" "}
             <Link
               to={ROUTES.LOGIN}
-              className="text-indigo-600 hover:text-indigo-400 border-b-2 border-indigo-200 hover:border-indigo-400 transition-all"
+              className="text-cyan-400 hover:text-cyan-400 border-b-2 border-cyan-200 hover:border-cyan-400 transition-all"
             >
               Login here
             </Link>

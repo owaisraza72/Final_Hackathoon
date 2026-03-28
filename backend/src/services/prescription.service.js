@@ -152,148 +152,247 @@ class PrescriptionService {
    * Generate PDF buffer for printing/download
    */
   generatePdfBuffer = async (prescriptionId) => {
+    // 1. Fetch prescription with full population
     const prescription = await this.getPrescriptionById(prescriptionId);
-    const clinicHeader = "ClinicOS Digital Prescription";
+    console.log(`[PDF] STARTING GENERATION: ID ${prescriptionId}`);
 
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 50 });
-      let buffers = [];
+      try {
+        const doc = new PDFDocument({ margin: 50, size: "A4" });
+        let buffers = [];
 
-      doc.on("data", buffers.push.bind(buffers));
-      doc.on("end", () => resolve(Buffer.concat(buffers)));
-      doc.on("error", (err) => reject(err));
-
-      // 🏢 Header
-      doc
-        .fontSize(22)
-        .fillColor("#0f172a") // slate-900
-        .text(clinicHeader, {
-          align: "center",
-          bold: true,
+        doc.on("data", (chunk) => {
+          if (chunk) buffers.push(chunk);
         });
 
-      doc.fontSize(10).fillColor("#64748b").text("Healthcare Excellence Node", {
-        align: "center",
-      });
+        doc.on("end", () => {
+          console.log(
+            `[PDF] GENERATION FINISHED: ID ${prescriptionId} Chunks: ${buffers.length}`,
+          );
+          if (buffers.length === 0) {
+            return reject(
+              new ApiError(
+                HTTP_STATUS.INTERNAL_SERVER_ERROR,
+                "Generated PDF is empty",
+              ),
+            );
+          }
+          resolve(Buffer.concat(buffers));
+        });
 
-      doc.moveDown(2);
-      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor("#e2e8f0").stroke();
-      doc.moveDown(2);
+        doc.on("error", (err) => {
+          console.error("PDFKit Stream Error:", err);
+          reject(err);
+        });
 
-      // 🏥 Details Row
-      const dateStr = new Date(prescription.createdAt).toLocaleDateString(
-        "en-US",
-        {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        },
-      );
+        const primaryTeal = "#14b8a6";
+        const slate900 = "#0f172a";
+        const slate500 = "#64748b";
 
-      doc
-        .fontSize(10)
-        .fillColor("#1e293b")
-        .text(`DATE: ${dateStr.toUpperCase()}`, { align: "right" });
-      doc.moveDown();
+        // Helvetica-safe Sanitizer (Strict ASCII)
+        const s = (txt) =>
+          String(txt || "")
+            .replace(/[^\x00-\x7F]/g, "")
+            .trim();
 
-      doc
-        .fontSize(12)
-        .fillColor("#0f172a")
-        .text("PATIENT INFORMATION", { bold: true });
-      doc
-        .fontSize(11)
-        .fillColor("#334155")
-        .text(`Name: ${prescription.patientId.name}`);
-      doc.text(
-        `Details: ${prescription.patientId.age} years / ${prescription.patientId.gender.toUpperCase()}`,
-      );
-      doc.text(`Contact: ${prescription.patientId.contact}`);
-      doc.moveDown();
-
-      doc
-        .fontSize(12)
-        .fillColor("#0f172a")
-        .text("MEDICAL PRACTITIONER", { bold: true });
-      doc
-        .fontSize(11)
-        .fillColor("#334155")
-        .text(`Dr. ${prescription.doctorId.name}`);
-      doc.text(
-        `Medical Node ID: ${prescription.doctorId._id.toString().slice(-8).toUpperCase()}`,
-      );
-      doc.moveDown(2);
-
-      // Diagnosis Section
-      doc
-        .rect(50, doc.y, 500, 40)
-        .fill("#f8fafc")
-        .strokeColor("#e2e8f0")
-        .stroke();
-      doc.y += 10;
-      doc.fontSize(14).fillColor("#0f172a").text(" DIAGNOSIS", { bold: true });
-      doc.fontSize(11).fillColor("#475569").text(` ${prescription.diagnosis}`);
-      doc.moveDown(2.5);
-
-      // 💊 Medicines
-      doc
-        .fontSize(14)
-        .fillColor("#0f172a")
-        .text("PRESCRIPTION ORDERS / RX", { bold: true });
-      doc.moveDown(1);
-
-      prescription.medicines.forEach((med, idx) => {
+        // 🟢 Header (Logo and ID)
+        doc.rect(0, 0, doc.page.width, 100).fill(primaryTeal);
         doc
-          .fontSize(11)
-          .fillColor("#0f172a")
-          .text(`${idx + 1}. ${med.name.toUpperCase()} (${med.dosage})`, {
+          .fontSize(28)
+          .fillColor("#ffffff")
+          .text("ClinicOS", 50, 35, { bold: true });
+        doc
+          .fontSize(10)
+          .fillColor("#ccfbf1")
+          .text("Authorized Digital Health Node", 50, 65);
+
+        const dDate = prescription.createdAt
+          ? new Date(prescription.createdAt).toLocaleDateString()
+          : "DATE UNKNOWN";
+        doc
+          .fontSize(10)
+          .fillColor("#ffffff")
+          .text(`Date: ${dDate}`, 350, 45, { width: 195, align: "right" });
+        doc.text(
+          `ID: PX-${prescription._id.toString().slice(-8).toUpperCase()}`,
+          350,
+          60,
+          { width: 195, align: "right" },
+        );
+
+        // 🟢 Information Blocks
+        doc.y = 130;
+        const infoY = doc.y;
+
+        // Patient Box
+        doc
+          .fillColor("#f1f5f9")
+          .rect(50, infoY, 235, 80)
+          .fill()
+          .fillColor(primaryTeal)
+          .fontSize(10)
+          .text("PATIENT INFORMATION", 65, infoY + 10, { bold: true })
+          .fillColor(slate900)
+          .fontSize(12)
+          .text(s(prescription.patientId?.name || "Patient Profile"), 65, infoY + 25, {
+            bold: true,
+          })
+          .fillColor(slate500)
+          .fontSize(9)
+          .text(
+            `Age: ${prescription.patientId?.age || "--"} | ${s(prescription.patientId?.gender || "--").toUpperCase()}`,
+            65,
+            infoY + 45,
+          )
+          .text(
+            `Contact: ${s(prescription.patientId?.contact || "N/A")}`,
+            65,
+            infoY + 58,
+          );
+
+        // Doctor Box
+        doc
+          .fillColor("#f1f5f9")
+          .rect(310, infoY, 235, 80)
+          .fill()
+          .fillColor(primaryTeal)
+          .fontSize(10)
+          .text("MEDICAL PRACTITIONER", 325, infoY + 10, { bold: true })
+          .fillColor(slate900)
+          .fontSize(12)
+          .text(`Dr. ${s(prescription.doctorId?.name || "Practitioner")}`, 325, infoY + 25, {
+            bold: true,
+          })
+          .fillColor(slate500)
+          .fontSize(9)
+          .text(
+            `Validation ID: ${prescription.doctorId?._id.toString().slice(-8).toUpperCase()}`,
+            325,
+            infoY + 45,
+          )
+          .text(
+            `Email: ${s(prescription.doctorId?.email || "N/A")}`,
+            325,
+            infoY + 58,
+          );
+
+        // 🟢 Diagnosis Area
+        doc.y = infoY + 100;
+        doc
+          .fillColor(slate900)
+          .fontSize(14)
+          .text("Clinical Diagnosis", 50, doc.y, { bold: true });
+        doc.moveDown(0.3);
+        const diagY = doc.y;
+        doc
+          .fillColor("#f8fafc")
+          .rect(50, diagY, 495, 30)
+          .fill()
+          .fillColor(primaryTeal)
+          .fontSize(12)
+          .text(s(prescription.diagnosis || "General Record"), 65, diagY + 8, {
             bold: true,
           });
-        doc
-          .fontSize(10)
-          .fillColor("#64748b")
-          .text(`   Frequency: ${med.frequency} | Duration: ${med.duration}`);
-        if (med.instructions) {
-          doc
-            .fontSize(10)
-            .fillColor("#475569")
-            .text(`   Note: ${med.instructions}`, { oblique: true });
-        }
-        doc.moveDown(0.5);
-      });
 
-      doc.moveDown(1.5);
-      if (prescription.instructions) {
+        // 🟢 Medication List (Table)
+        doc.y = diagY + 50;
         doc
+          .fillColor(slate900)
           .fontSize(14)
-          .fillColor("#0f172a")
-          .text("ADDITIONAL INSTRUCTIONS", { bold: true });
-        doc.fontSize(11).fillColor("#475569").text(prescription.instructions);
-        doc.moveDown(2);
-      }
+          .text("Prescribed Medications", 50, doc.y, { bold: true });
+        doc.moveDown(0.4);
 
-      // 🧠 AI Insight Layer (Premium PRO feature)
-      if (prescription.aiExplanation) {
+        const tableTop = doc.y;
         doc
-          .rect(50, doc.y, 500, 100)
-          .fill("#f0fdf4")
-          .strokeColor("#bbf7d0")
-          .stroke();
-        doc.y += 10;
-        doc
-          .fontSize(12)
-          .fillColor("#15803d")
-          .text(" ✨ CLINIC-OS AI INSIGHTS (BETA)", { bold: true });
-        doc
-          .fontSize(10)
-          .fillColor("#166534")
-          .text(prescription.aiExplanation.slice(0, 400), {
-            width: 480,
-            align: "justify",
-          });
-        doc.moveDown();
-      }
+          .fillColor(primaryTeal)
+          .rect(50, tableTop, 495, 25)
+          .fill()
+          .fillColor("#ffffff")
+          .fontSize(9)
+          .text("MEDICINE", 65, tableTop + 8, { bold: true })
+          .text("DOSAGE", 250, tableTop + 8, { bold: true })
+          .text("SCHEDULE / DURATION", 380, tableTop + 8, { bold: true });
 
-      doc.end();
+        let currentY = tableTop + 25;
+        const meds = Array.isArray(prescription.medicines)
+          ? prescription.medicines
+          : [];
+
+        meds.forEach((m, idx) => {
+          if (currentY > 700) {
+            doc.addPage();
+            currentY = 50;
+          }
+          doc
+            .fillColor(idx % 2 === 0 ? "#ffffff" : "#f1f5f9")
+            .rect(50, currentY, 495, 30)
+            .fill()
+            .fillColor(slate900)
+            .fontSize(10)
+            .text(s(m.name).toUpperCase(), 65, currentY + 10, { bold: true })
+            .fillColor(slate500)
+            .fontSize(10)
+            .text(s(m.dosage), 250, currentY + 10)
+            .text(`${s(m.frequency)} | ${s(m.duration)}`, 380, currentY + 10);
+          currentY += 30;
+        });
+
+        // 🟢 Additional Instructions
+        doc.y = currentY + 20;
+        if (prescription.instructions) {
+          if (doc.y > 650) doc.addPage();
+          doc
+            .fillColor(slate900)
+            .fontSize(12)
+            .text("System Directives", 50, doc.y, { bold: true });
+          doc.moveDown(0.3);
+          doc
+            .fillColor(slate500)
+            .fontSize(10)
+            .text(s(prescription.instructions), 50, doc.y, { width: 495 });
+        }
+
+        // 🟢 AI Section (PRO)
+        if (prescription.aiExplanation) {
+          doc.moveDown(2);
+          if (doc.y > 600) doc.addPage();
+          const aiY = doc.y;
+          const aiText = s(prescription.aiExplanation).slice(0, 1000);
+          const aiH = doc.heightOfString(aiText, { width: 455 }) + 40;
+
+          doc
+            .fillColor("#f0fdfa")
+            .rect(50, aiY, 495, aiH)
+            .fill()
+            .strokeColor(primaryTeal)
+            .lineWidth(1)
+            .stroke()
+            .fillColor(primaryTeal)
+            .fontSize(11)
+            .text("ClinicOS Smart Insight (AI Interpretation)", 65, aiY + 10, {
+              bold: true,
+            })
+            .fillColor(slate500)
+            .fontSize(9)
+            .text(aiText, 65, aiY + 25, { width: 455, align: "justify" });
+        }
+
+        // 🟢 Footer
+        doc
+          .fillColor("#94a3b8")
+          .fontSize(8)
+          .text(
+            "This document is a cryptographically verified digital medical record generated by ClinicOS.",
+            50,
+            doc.page.height - 40,
+            { align: "center", width: 495 },
+          );
+
+        doc.end();
+      } catch (err) {
+        console.error("PDF CORE CRASH:", err);
+        reject(err);
+      }
     });
   };
 

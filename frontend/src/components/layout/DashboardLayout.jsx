@@ -236,40 +236,38 @@ const DashboardLayout = () => {
 
                     {/* Menu Items */}
                     <div className="p-2">
-			<Link
-                          to={`/${user?.role?.toLowerCase()}/profile`}
-                          className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-                        >
-                          <div className="h-8 w-8 rounded-lg bg-slate-100 group-hover:bg-teal-50 flex items-center justify-center">
-                            <User className="h-4 w-4 text-slate-600 group-hover:text-teal-600" />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <p className="text-sm font-medium text-slate-700">
-                              Profile
-                            </p>
-                            <p className="text-[10px] text-slate-400">
-                              View your profile
-                            </p>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-slate-400" />
-                        </Link>
-			
-			<button
-                          className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-                        >
-                          <div className="h-8 w-8 rounded-lg bg-slate-100 group-hover:bg-teal-50 flex items-center justify-center">
-                            <HelpCircle className="h-4 w-4 text-slate-600 group-hover:text-teal-600" />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <p className="text-sm font-medium text-slate-700">
-                              Help & Support
-                            </p>
-                            <p className="text-[10px] text-slate-400">
-                              Get assistance
-                            </p>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-slate-400" />
-                        </button>
+                      <Link
+                        to={`/${user?.role?.toLowerCase()}/profile`}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
+                      >
+                        <div className="h-8 w-8 rounded-lg bg-slate-100 group-hover:bg-teal-50 flex items-center justify-center">
+                          <User className="h-4 w-4 text-slate-600 group-hover:text-teal-600" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="text-sm font-medium text-slate-700">
+                            Profile
+                          </p>
+                          <p className="text-[10px] text-slate-400">
+                            View your profile
+                          </p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                      </Link>
+
+                      <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
+                        <div className="h-8 w-8 rounded-lg bg-slate-100 group-hover:bg-teal-50 flex items-center justify-center">
+                          <HelpCircle className="h-4 w-4 text-slate-600 group-hover:text-teal-600" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="text-sm font-medium text-slate-700">
+                            Help & Support
+                          </p>
+                          <p className="text-[10px] text-slate-400">
+                            Get assistance
+                          </p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                      </button>
 
                       <div className="my-2 h-px bg-slate-100" />
 

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/utils/constants";
 import {
-  CheckCircle2,
+  CircleCheckBig,
   Code2,
   Database,
   Lock,
@@ -511,7 +511,7 @@ const AboutPage = () => {
                   <p className="font-bold text-slate-900">{name}</p>
                   <p className="text-xs text-slate-500 mt-1">{desc}</p>
                 </div>
-                <CheckCircle2 className="h-5 w-5 text-green-500 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                <CircleCheckBig className="h-5 w-5 text-green-500 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
               </motion.div>
             ))}
           </motion.div>
@@ -715,3 +715,4 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+

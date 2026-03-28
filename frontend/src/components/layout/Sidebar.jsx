@@ -252,12 +252,12 @@ const Sidebar = () => {
                 className="flex items-center justify-between w-full"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-teal-500 to-indigo-500 flex items-center justify-center shadow-lg">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg">
                     <HeartPulse className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <h1 className="text-xl font-black text-white">
-                      Clinic<span className="text-teal-400">OS</span>
+                      Clinic<span className="text-cyan-300">OS</span>
                     </h1>
                     <p className="text-[8px] uppercase tracking-wider text-slate-500 font-bold">
                       HEALTHCARE OS

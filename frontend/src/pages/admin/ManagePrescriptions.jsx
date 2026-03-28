@@ -14,7 +14,7 @@ import {
   Calendar,
   Download,
   Trash2,
-  AlertCircle,
+  CircleAlert,
   Search,
   Filter,
   ChevronDown,
@@ -22,8 +22,8 @@ import {
   Eye,
   Mail,
   Clock,
-  CheckCircle2,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Shield,
   Award,
   Sparkles,
@@ -54,7 +54,7 @@ import {
   Send,
   MessageCircle,
   MessageSquare,
-  HelpCircle,
+  CircleHelp,
   Headphones,
   Coffee,
   Sun,
@@ -646,7 +646,7 @@ const ManagePrescriptions = () => {
         ) : isError ? (
           <div className="h-[500px] flex flex-col items-center justify-center gap-4">
             <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center">
-              <AlertCircle className="h-8 w-8 text-red-400" />
+              <CircleAlert className="h-8 w-8 text-red-400" />
             </div>
             <p className="text-sm font-bold text-red-400">
               Archive Sync Exception
@@ -853,7 +853,7 @@ const ManagePrescriptions = () => {
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
-                    <AlertCircle className="h-6 w-6 text-red-600" />
+                    <CircleAlert className="h-6 w-6 text-red-600" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-800">
                     Archive Prescription
@@ -889,3 +889,4 @@ const ManagePrescriptions = () => {
 };
 
 export default ManagePrescriptions;
+

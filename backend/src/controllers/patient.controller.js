@@ -86,8 +86,14 @@ class PatientController {
   getPatientHistory = asyncHandler(async (req, res) => {
     let { id } = req.params;
 
+    if (req.user.role === "PATIENT" && id !== "me" && id !== req.user._id.toString()) {
+      return res
+        .status(HTTP_STATUS.FORBIDDEN)
+        .json(new ApiResponse(HTTP_STATUS.FORBIDDEN, null, "Forbidden"));
+    }
+
     // Handle "me" alias for logged-in patients
-    if (id === "me") {
+    if (id === "me" || req.user.role === "PATIENT") {
       id = req.user._id;
 
       // PROACTIVE SYNC: Link by email if not already linked
@@ -128,6 +134,29 @@ class PatientController {
           HTTP_STATUS.OK,
           { patient },
           "Patient deleted successfully",
+        ),
+      );
+  });
+
+  // ── POST /api/v1/patients/bulk-delete ──
+  bulkDeletePatients = asyncHandler(async (req, res) => {
+    const { ids } = req.body;
+    
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        new ApiResponse(HTTP_STATUS.BAD_REQUEST, null, "Please provide patient IDs")
+      );
+    }
+
+    const count = await patientService.bulkDeletePatients(ids);
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(
+        new ApiResponse(
+          HTTP_STATUS.OK,
+          { count },
+          `${count} patients deactivated successfully`,
         ),
       );
   });

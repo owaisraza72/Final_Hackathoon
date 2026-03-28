@@ -103,16 +103,22 @@ class PrescriptionController {
   downloadPDF = asyncHandler(async (req, res) => {
     const prescriptionId = req.params.id;
 
-    const pdfBuffer =
-      await prescriptionService.generatePdfBuffer(prescriptionId);
+    try {
+      const pdfBuffer = await prescriptionService.generatePdfBuffer(prescriptionId);
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=prescription_${prescriptionId}.pdf`,
-      "Content-Length": pdfBuffer.length,
-    });
+      res.set({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=prescription_${prescriptionId}.pdf`,
+      });
 
-    res.send(pdfBuffer);
+      res.send(pdfBuffer);
+    } catch (err) {
+      console.error(">>> PDF CONTROLLER CRASH:", err);
+      throw new ApiError(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        "PDF Generation Failed: " + err.message,
+      );
+    }
   });
 
   // ── PATCH /api/v1/prescriptions/:id ──

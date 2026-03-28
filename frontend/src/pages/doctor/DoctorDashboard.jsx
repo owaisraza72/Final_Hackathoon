@@ -15,7 +15,7 @@ import {
   Stethoscope,
   Sparkles,
   TrendingUp,
-  CheckCircle2,
+  CircleCheckBig,
   Hourglass,
   Zap,
   Pill,
@@ -621,7 +621,7 @@ const DoctorDashboard = () => {
                             <Clock className="h-2.5 w-2.5" />
                           )}
                           {app.status === "completed" && (
-                            <CheckCircle2 className="h-2.5 w-2.5" />
+                            <CircleCheckBig className="h-2.5 w-2.5" />
                           )}
                           {app.status}
                         </div>
@@ -876,3 +876,4 @@ const DoctorDashboard = () => {
 };
 
 export default DoctorDashboard;
+

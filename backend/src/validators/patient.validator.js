@@ -47,11 +47,23 @@ const updatePatientSchema = z.object({
     .string()
     .regex(/^[0-9+\-\s]{7,20}$/)
     .optional(),
+  email: z.string().email().optional().or(z.literal("")),
   address: z.string().optional(),
   bloodGroup: z
-    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"])
+    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown", ""])
+    .optional()
+    .transform((val) => (val === "" ? "unknown" : val)),
+  allergies: z
+    .preprocess((val) => {
+      if (typeof val === "string") {
+        return val
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      return val;
+    }, z.array(z.string()))
     .optional(),
-  allergies: z.array(z.string()).optional(),
 });
 
 module.exports = { registerPatientSchema, updatePatientSchema };

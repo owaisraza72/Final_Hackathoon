@@ -16,8 +16,8 @@ const { ROLES } = require("../constants");
 
 const router = Router();
 
-// All AI routes require authentication and PRO subscription!
-router.use(authenticate, requirePro);
+// All AI routes require authentication (Plan check disabled for Hackathon)
+router.use(authenticate);
 
 // ── AI Methods ──
 

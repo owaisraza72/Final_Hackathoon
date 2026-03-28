@@ -5,9 +5,9 @@ import PageHeader from "@/components/ui/PageHeader";
 import {
   BrainCircuit,
   Loader2,
-  AlertTriangle,
   UserRound,
   ArrowRight,
+  LifeBuoy, 
   Sparkles,
   Shield,
   Activity,
@@ -75,7 +75,9 @@ const AIAssistant = () => {
   const [showTips, setShowTips] = useState(false);
   const [recentAnalyses, setRecentAnalyses] = useState([]);
 
-  const isPro = analytics?.business?.plan === "PRO";
+  // PLAN CHECK DISABLED FOR HACKATHON
+  // const isPro = analytics?.business?.plan === "PRO";
+  const isPro = true; 
 
   useEffect(() => {
     if (patientId && patients) {
@@ -158,6 +160,7 @@ const AIAssistant = () => {
     "Chest pain", "Shortness of breath", "Dizziness", "Rash", "Joint pain"
   ];
 
+  /* 
   if (!isPro && analytics) {
     return (
       <motion.div
@@ -203,6 +206,7 @@ const AIAssistant = () => {
       </motion.div>
     );
   }
+  */
 
   return (
     <motion.div

@@ -80,7 +80,7 @@ router.patch(
 // @desc    Comprehensive medical record dump
 router.get(
   "/:id/history",
-  authorize(ROLES.ADMIN, ROLES.DOCTOR, ROLES.RECEPTIONIST),
+  authorize(ROLES.ADMIN, ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.PATIENT),
   patientController.getPatientHistory,
 );
 
@@ -91,6 +91,15 @@ router.delete(
   "/:id",
   authorize(ROLES.RECEPTIONIST, ROLES.ADMIN),
   patientController.deletePatient,
+);
+
+// ── Bulk Deactivate ──
+// @route   POST /api/v1/patients/bulk-delete
+// @desc    Mark multiple patient records as inactive
+router.post(
+  "/bulk-delete",
+  authorize(ROLES.RECEPTIONIST, ROLES.ADMIN),
+  patientController.bulkDeletePatients,
 );
 
 module.exports = router;

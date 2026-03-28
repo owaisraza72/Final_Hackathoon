@@ -70,6 +70,14 @@ export const patientApi = createApi({
       }),
       invalidatesTags: ["Patient"],
     }),
+    bulkDeletePatients: builder.mutation({
+      query: (ids) => ({
+        url: `patients/bulk-delete`,
+        method: "POST",
+        body: { ids },
+      }),
+      invalidatesTags: ["Patient"],
+    }),
     getPatientHistory: builder.query({
       query: (id) => `patients/${id}/history`,
       providesTags: (result, error, id) => [{ type: "PatientHistory", id }],
@@ -84,5 +92,6 @@ export const {
   useGetPatientQuery,
   useUpdatePatientMutation,
   useDeletePatientMutation,
+  useBulkDeletePatientsMutation,
   useGetPatientHistoryQuery,
 } = patientApi;
